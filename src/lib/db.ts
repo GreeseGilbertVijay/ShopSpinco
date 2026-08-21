@@ -22,7 +22,20 @@ declare global {
 // (an IPv6-only path through a NAT64 gateway), which surfaces as
 // "tlsv1 alert internal error". It's transient - most retries within a
 // few seconds succeed - so keep retrying instead of giving up on attempt 1.
-async function connectWithRetry(maxAttempts = 10, baseDelayMs = 2000): Promise<typeof mongoose> {
+// Scoped to dev: in production a stuck/unreachable Mongo (e.g. an IP not
+// yet allowlisted in Atlas) must fail well within the reverse proxy's
+// read timeout, or every request hangs until the proxy kills the
+// connection (502 "prematurely closed connection").
+const isProd = process.env.NODE_ENV === 'production';
+const DEFAULT_MAX_ATTEMPTS = isProd ? 3 : 10;
+const DEFAULT_BASE_DELAY_MS = isProd ? 1000 : 2000;
+const MAX_BACKOFF_MS = isProd ? 5000 : 15000;
+const SERVER_SELECTION_TIMEOUT_MS = isProd ? 8000 : 10000;
+
+async function connectWithRetry(
+  maxAttempts = DEFAULT_MAX_ATTEMPTS,
+  baseDelayMs = DEFAULT_BASE_DELAY_MS
+): Promise<typeof mongoose> {
   const uri = process.env.MONGO_URI;
   if (!uri) {
     throw new Error('MONGO_URI is not set');
@@ -30,7 +43,9 @@ async function connectWithRetry(maxAttempts = 10, baseDelayMs = 2000): Promise<t
 
   for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
     try {
-      const conn = await mongoose.connect(uri, { serverSelectionTimeoutMS: 10000 });
+      const conn = await mongoose.connect(uri, {
+        serverSelectionTimeoutMS: SERVER_SELECTION_TIMEOUT_MS,
+      });
       console.log('MongoDB connected');
       return conn;
     } catch (err) {
@@ -39,7 +54,7 @@ async function connectWithRetry(maxAttempts = 10, baseDelayMs = 2000): Promise<t
       if (isLastAttempt) {
         throw err;
       }
-      const delayMs = Math.min(baseDelayMs * attempt, 15000);
+      const delayMs = Math.min(baseDelayMs * attempt, MAX_BACKOFF_MS);
       await wait(delayMs);
     }
   }
