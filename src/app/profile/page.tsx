@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { getMe, ApiError, type User } from '@/lib/api';
+import { getMe, type User } from '@/lib/api';
 import { useAuth } from '@/components/AuthProvider';
 
 export default function MyProfile() {
@@ -14,14 +14,14 @@ export default function MyProfile() {
   useEffect(() => {
     getMe()
       .then((data) => {
-        setUser(data);
-        setStatus('ready');
-      })
-      .catch((err) => {
-        if (err instanceof ApiError && (err.status === 401 || err.status === 403)) {
+        if (!data) {
           router.replace('/login');
           return;
         }
+        setUser(data);
+        setStatus('ready');
+      })
+      .catch(() => {
         setStatus('error');
       });
     // eslint-disable-next-line react-hooks/exhaustive-deps

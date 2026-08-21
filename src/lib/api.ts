@@ -163,11 +163,8 @@ export async function logout() {
   await fetch('/api/auth/logout', { method: 'POST' });
 }
 
-export async function getMe(): Promise<User> {
+export async function getMe(): Promise<User | null> {
   const res = await fetch('/api/auth/me');
-  if (res.status === 401 || res.status === 403) {
-    throw new ApiError('Session expired', { status: res.status });
-  }
   if (!res.ok) throw new ApiError('Failed to load profile', { status: res.status });
   return res.json();
 }
