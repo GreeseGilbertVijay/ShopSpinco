@@ -1,5 +1,5 @@
 {
-  "name": "shopspinco-next",
+  "name": "shopspinco-app",
   "version": "0.1.0",
   "private": true,
   "scripts": {
@@ -9,13 +9,29 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@tailwindcss/typography": "^0.5.20",
+    "@tiptap/extension-placeholder": "^3.30.2",
+    "@tiptap/extension-table": "^3.30.2",
+    "@tiptap/react": "^3.30.2",
+    "@tiptap/starter-kit": "^3.30.2",
+    "bcryptjs": "^3.0.3",
+    "exceljs": "^4.4.0",
+    "jose": "^6.2.9",
+    "jsonwebtoken": "^9.0.3",
+    "mongoose": "^9.9.3",
     "next": "16.3.1",
+    "nodemailer": "^9.0.5",
+    "pdfkit": "^0.19.1",
     "react": "19.2.8",
     "react-dom": "19.2.8"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
+    "@types/bcryptjs": "^2.4.6",
+    "@types/jsonwebtoken": "^9.0.10",
     "@types/node": "^20",
+    "@types/nodemailer": "^8.0.1",
+    "@types/pdfkit": "^0.17.6",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "eslint": "^9",
