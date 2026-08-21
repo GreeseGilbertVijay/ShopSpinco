@@ -3,7 +3,12 @@ import mongoose from 'mongoose';
 
 // Node's resolver can fail to pick up the system DNS servers on Windows,
 // falling back to 127.0.0.1 which can't resolve mongodb.net hostnames.
-dns.setServers(['8.8.8.8', '1.1.1.1']);
+// Scoped to local Windows dev only: production hosts (e.g. Cloudways) often
+// firewall outbound DNS to arbitrary IPs, so forcing 8.8.8.8/1.1.1.1 there
+// breaks lookups instead of fixing them.
+if (process.platform === 'win32' && process.env.NODE_ENV !== 'production') {
+  dns.setServers(['8.8.8.8', '1.1.1.1']);
+}
 
 function wait(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
