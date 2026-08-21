@@ -51,7 +51,11 @@ async function connectWithRetry(maxAttempts = 10, baseDelayMs = 2000): Promise<t
 // Route Handler invocations reuse the same connection instead of opening a new one each time.
 export default function connectDB(): Promise<typeof mongoose> {
   if (!global._mongooseConnectPromise) {
-    global._mongooseConnectPromise = connectWithRetry();
+    global._mongooseConnectPromise = connectWithRetry().catch((err) => {
+      // Don't cache a failed attempt forever - let the next request retry.
+      global._mongooseConnectPromise = undefined;
+      throw err;
+    });
   }
   return global._mongooseConnectPromise;
 }
