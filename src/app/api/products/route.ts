@@ -6,9 +6,17 @@ import { cleanImages, cleanTabs, cleanVariationGroups } from '@/lib/productSanit
 
 // Public: list all products (Shop page)
 export async function GET() {
-  await connectDB();
-  const products = await Product.find().sort({ createdAt: -1 });
-  return NextResponse.json(products);
+  try {
+    await connectDB();
+    const products = await Product.find().sort({ createdAt: -1 });
+    return NextResponse.json(products);
+  } catch (err) {
+    console.error('GET /api/products failed:', err);
+    return NextResponse.json(
+      { message: 'Database connection failed', detail: (err as Error).message },
+      { status: 503 }
+    );
+  }
 }
 
 // superAdmin only: create product
