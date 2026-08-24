@@ -3,7 +3,7 @@ import connectDB from '@/lib/db';
 import Quote from '@/models/Quote';
 import Product from '@/models/Product';
 import { AuthError, requireSuperAdmin } from '@/lib/auth';
-import { sendMail } from '@/lib/mail';
+import { sendMail, describeMailError } from '@/lib/mail';
 import { generateInvoicePdf } from '@/lib/invoice';
 import { cleanFreezeDryerDetails, formatFreezeDryerDetails } from '@/lib/freezeDryerDetails';
 
@@ -110,7 +110,7 @@ export async function POST(req: NextRequest) {
       }),
     ]);
   } catch (err) {
-    console.error('Quote email delivery failed:', (err as Error).message);
+    console.error('Quote email delivery failed:', describeMailError(err));
   }
 
   return NextResponse.json(quote, { status: 201 });

@@ -27,8 +27,8 @@ export default function Navbar() {
         className="flex items-center gap-2 font-bold text-l no-underline text-inherit"
         onClick={() => setMenuOpen(false)}
       >
-        <img src="/logo.png" alt="ShopSpinco" className="h-8 w-auto" />
-        ShopSpinco
+        <img src="/logo.png" alt="Spinco" className="h-8 w-auto" />
+        Shop
       </Link>
 
       <div className="hidden md:flex items-center gap-6">

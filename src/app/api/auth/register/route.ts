@@ -3,6 +3,7 @@ import bcrypt from 'bcryptjs';
 import connectDB from '@/lib/db';
 import User from '@/models/User';
 import { generateOtp, sendOtpEmail, OTP_TTL_MS } from '@/lib/otp';
+import { describeMailError } from '@/lib/mail';
 
 export async function POST(req: NextRequest) {
   await connectDB();
@@ -48,7 +49,7 @@ export async function POST(req: NextRequest) {
   try {
     await sendOtpEmail(user, otp);
   } catch (err) {
-    console.error('OTP email delivery failed:', (err as Error).message);
+    console.error('OTP email delivery failed:', describeMailError(err));
     return NextResponse.json(
       { message: 'Failed to send verification email. Please try again.' },
       { status: 502 }
