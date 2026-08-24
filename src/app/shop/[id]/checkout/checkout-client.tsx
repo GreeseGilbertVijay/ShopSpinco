@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { getProduct, submitQuote, type QuoteSelection, type FreezeDryerDetails } from '@/lib/api';
 import { INDIAN_STATES } from '@/data/indianStates';
 import { useCheckoutSelection } from '@/components/CheckoutSelectionProvider';
+import MultiSelectDropdown from '@/components/MultiSelectDropdown';
 
 const inputCls =
   'px-3 py-2.5 rounded-md border border-black/15 bg-transparent text-black placeholder-black/40 focus:outline-none focus:border-[#f29a4e]';
@@ -13,8 +14,6 @@ const sectionHeadingCls = 'sm:col-span-2 text-lg font-semibold text-black! mt-2'
 const hintCls = 'sm:col-span-2 text-sm text-black/60 -mt-1 mb-1';
 const checkboxGroupCls = 'sm:col-span-2 flex flex-col gap-1.5';
 const checkboxLabelCls = 'text-sm font-medium text-black/80';
-const checkboxGridCls = 'flex flex-wrap gap-x-4 gap-y-1.5';
-const checkboxOptionCls = 'flex items-center gap-1.5 text-sm text-black/80';
 
 type FreezeDryerListField = keyof Omit<FreezeDryerDetails, 'comments'>;
 
@@ -148,12 +147,8 @@ export default function CheckoutClient({ id }: { id: string }) {
     setForm({ ...form, [e.target.name]: e.target.value });
   }
 
-  function toggleFreezeDryerOption(key: FreezeDryerListField, option: string) {
-    setFreezeDryerDetails((prev) => {
-      const current = prev[key];
-      const next = current.includes(option) ? current.filter((o) => o !== option) : [...current, option];
-      return { ...prev, [key]: next };
-    });
+  function setFreezeDryerField(key: FreezeDryerListField, next: string[]) {
+    setFreezeDryerDetails((prev) => ({ ...prev, [key]: next }));
   }
 
   function handleFreezeDryerCommentsChange(e: React.ChangeEvent<HTMLTextAreaElement>) {
@@ -290,18 +285,12 @@ export default function CheckoutClient({ id }: { id: string }) {
               {FREEZE_DRYER_QUESTIONS.map((question) => (
                 <div className={checkboxGroupCls} key={question.key}>
                   <span className={checkboxLabelCls}>{question.label}</span>
-                  <div className={checkboxGridCls}>
-                    {question.options.map((option) => (
-                      <label className={checkboxOptionCls} key={option}>
-                        <input
-                          type="checkbox"
-                          checked={freezeDryerDetails[question.key].includes(option)}
-                          onChange={() => toggleFreezeDryerOption(question.key, option)}
-                        />
-                        {option}
-                      </label>
-                    ))}
-                  </div>
+                  <MultiSelectDropdown
+                    options={question.options}
+                    selected={freezeDryerDetails[question.key]}
+                    onChange={(next) => setFreezeDryerField(question.key, next)}
+                    placeholder="Select all that apply"
+                  />
                 </div>
               ))}
 
