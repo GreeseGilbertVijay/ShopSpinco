@@ -8,7 +8,7 @@ import Footer from '@/components/Footer';
 export const metadata: Metadata = {
   title: 'ShopSpinco',
   description: 'Quality freeze-dried products, made simple.',
-  icons: { icon: '/favicon.svg' },
+  icons: { icon: '/logo.png' },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

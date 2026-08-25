@@ -2,7 +2,10 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import { Ubuntu } from 'next/font/google';
 import { useAuth } from './AuthProvider';
+
+const ubuntu = Ubuntu({ subsets: ['latin'], weight: ['500'] });
 
 function ProfileIcon() {
   return (
@@ -21,9 +24,11 @@ export default function Navbar() {
   const isLoggedIn = Boolean(user);
 
   return (
-    <nav className="fixed top-[10px] inset-x-0 z-50 h-16 flex items-center justify-between mx-[5%] px-2 bg-white border-[5px] border-solid border-[#f5f5f5] rounded-[50px]">
+    <nav
+      className={`${ubuntu.className} font-medium text-base fixed top-[10px] inset-x-0 z-50 h-16 flex items-center justify-between mx-[5%] px-2 bg-white border-[5px] border-solid border-[#f5f5f5] rounded-[50px]`}
+    >
       <Link
-        href="/"
+        href="https://spincotech.com/"
         className="flex items-center gap-2 font-bold text-l no-underline text-inherit"
         onClick={() => setMenuOpen(false)}
       >
@@ -54,6 +59,15 @@ export default function Navbar() {
             </Link>
           </>
         )}
+        <Link
+          href="https://spincotech.com/contact-us/"
+          className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-black text-white no-underline text-sm font-medium transition-all"
+        >
+          Contact
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <path d="M5 12h14M13 5l7 7-7 7" />
+          </svg>
+        </Link>
       </div>
 
       <button
@@ -93,6 +107,16 @@ export default function Navbar() {
               </Link>
             </>
           )}
+          <Link
+            href="https://spincotech.com/contact-us/"
+            className="inline-flex items-center justify-center gap-1.5 mt-1 px-4 py-2.5 rounded-full bg-black text-white no-underline text-sm font-medium"
+            onClick={() => setMenuOpen(false)}
+          >
+            Contact
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <path d="M5 12h14M13 5l7 7-7 7" />
+            </svg>
+          </Link>
         </div>
       )}
     </nav>
