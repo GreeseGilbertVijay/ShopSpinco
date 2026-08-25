@@ -224,6 +224,15 @@ export async function getQuotes(): Promise<Quote[]> {
   return res.json();
 }
 
+export async function deleteQuote(id: string) {
+  const res = await fetch(`/api/quotes/${id}`, { method: 'DELETE' });
+  if (res.status === 401 || res.status === 403) {
+    throw new ApiError('Session expired', { status: res.status });
+  }
+  if (!res.ok) throw new ApiError(await parseErrorMessage(res, 'Failed to delete submission'), { status: res.status });
+  return res.json();
+}
+
 export async function exportQuotes({ from, to }: { from?: string; to?: string } = {}): Promise<Blob> {
   const params = new URLSearchParams();
   if (from) params.set('from', from);

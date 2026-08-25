@@ -3,7 +3,8 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { getQuotes, exportQuotes, ApiError, type Quote, type FreezeDryerDetails } from '@/lib/api';
+import { getQuotes, exportQuotes, deleteQuote, ApiError, type Quote, type FreezeDryerDetails } from '@/lib/api';
+import ConfirmDialog from '@/components/ConfirmDialog';
 
 const FREEZE_DRYER_LIST_FIELDS: (keyof Omit<FreezeDryerDetails, 'comments'>)[] = [
   'organizationSegment',
@@ -29,6 +30,11 @@ export default function Submissions() {
   const [exporting, setExporting] = useState(false);
   const [fromDate, setFromDate] = useState('');
   const [toDate, setToDate] = useState('');
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [bulkDeleting, setBulkDeleting] = useState(false);
+  const [pendingDelete, setPendingDelete] = useState<Quote | null>(null);
+  const [pendingBulkDelete, setPendingBulkDelete] = useState(false);
 
   const filteredQuotes = useMemo(() => {
     return quotes.filter((quote) => {
@@ -38,6 +44,12 @@ export default function Submissions() {
       return matchesFrom && matchesTo;
     });
   }, [quotes, fromDate, toDate]);
+
+  const selectedVisibleIds = useMemo(
+    () => filteredQuotes.filter((q) => selectedIds.has(q._id)).map((q) => q._id),
+    [filteredQuotes, selectedIds]
+  );
+  const allVisibleSelected = filteredQuotes.length > 0 && selectedVisibleIds.length === filteredQuotes.length;
 
   const hasActiveFilters = fromDate !== '' || toDate !== '';
 
@@ -61,6 +73,82 @@ export default function Submissions() {
       });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  async function confirmDelete() {
+    const quote = pendingDelete;
+    if (!quote) return;
+    setDeletingId(quote._id);
+    try {
+      await deleteQuote(quote._id);
+      setQuotes((prev) => prev.filter((q) => q._id !== quote._id));
+      setSelectedIds((prev) => {
+        if (!prev.has(quote._id)) return prev;
+        const next = new Set(prev);
+        next.delete(quote._id);
+        return next;
+      });
+      setPendingDelete(null);
+    } catch (err) {
+      if (err instanceof ApiError && (err.status === 401 || err.status === 403)) {
+        router.replace('/login');
+        return;
+      }
+      window.alert((err as Error).message);
+    } finally {
+      setDeletingId(null);
+    }
+  }
+
+  function toggleSelect(id: string) {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  }
+
+  function toggleSelectAll() {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (allVisibleSelected) {
+        filteredQuotes.forEach((q) => next.delete(q._id));
+      } else {
+        filteredQuotes.forEach((q) => next.add(q._id));
+      }
+      return next;
+    });
+  }
+
+  async function confirmBulkDelete() {
+    const ids = selectedVisibleIds;
+    if (ids.length === 0) return;
+    setBulkDeleting(true);
+    try {
+      const results = await Promise.allSettled(ids.map((id) => deleteQuote(id)));
+      const succeededIds = ids.filter((_, i) => results[i].status === 'fulfilled');
+      const failures = results.filter((r): r is PromiseRejectedResult => r.status === 'rejected');
+
+      if (failures.some((r) => r.reason instanceof ApiError && (r.reason.status === 401 || r.reason.status === 403))) {
+        router.replace('/login');
+        return;
+      }
+
+      setQuotes((prev) => prev.filter((q) => !succeededIds.includes(q._id)));
+      setSelectedIds((prev) => {
+        const next = new Set(prev);
+        succeededIds.forEach((id) => next.delete(id));
+        return next;
+      });
+      setPendingBulkDelete(false);
+
+      if (failures.length > 0) {
+        window.alert(`${failures.length} submission${failures.length > 1 ? 's' : ''} could not be deleted.`);
+      }
+    } finally {
+      setBulkDeleting(false);
+    }
+  }
 
   async function handleExport() {
     setExporting(true);
@@ -129,6 +217,16 @@ export default function Submissions() {
           >
             {exporting ? 'Exporting...' : 'Export to Excel'}
           </button>
+          {selectedVisibleIds.length > 0 && (
+            <button
+              type="button"
+              className="px-6 py-2.5 bg-transparent border border-[#ff6b6b] text-[#ff6b6b] rounded-md cursor-pointer text-base transition-all hover:bg-[#ff6b6b] hover:text-black hover:-translate-y-0.5 active:translate-y-0 disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:translate-y-0"
+              onClick={() => setPendingBulkDelete(true)}
+              disabled={bulkDeleting}
+            >
+              {bulkDeleting ? 'Deleting...' : `Delete selected (${selectedVisibleIds.length})`}
+            </button>
+          )}
         </div>
       )}
 
@@ -144,6 +242,14 @@ export default function Submissions() {
           <table className="w-full border-collapse whitespace-nowrap">
             <thead>
               <tr>
+                <th className="px-3.5 py-2.5 border border-black/15 text-left text-sm font-semibold bg-[#f29a4e]/10">
+                  <input
+                    type="checkbox"
+                    aria-label="Select all submissions"
+                    checked={allVisibleSelected}
+                    onChange={toggleSelectAll}
+                  />
+                </th>
                 {[
                   'Date',
                   'Product',
@@ -159,6 +265,7 @@ export default function Submissions() {
                   'Company Name',
                   'Role',
                   'Freeze Dryer Requirements',
+                  'Actions',
                 ].map((h) => (
                   <th key={h} className="px-3.5 py-2.5 border border-black/15 text-left text-sm font-semibold bg-[#f29a4e]/10">
                     {h}
@@ -169,6 +276,14 @@ export default function Submissions() {
             <tbody>
               {filteredQuotes.map((quote) => (
                 <tr key={quote._id}>
+                  <td className="px-3.5 py-2.5 border border-black/15 text-sm">
+                    <input
+                      type="checkbox"
+                      aria-label={`Select submission from ${[quote.firstName, quote.lastName].filter(Boolean).join(' ')}`}
+                      checked={selectedIds.has(quote._id)}
+                      onChange={() => toggleSelect(quote._id)}
+                    />
+                  </td>
                   <td className="px-3.5 py-2.5 border border-black/15 text-sm">{new Date(quote.createdAt).toLocaleString()}</td>
                   <td className="px-3.5 py-2.5 border border-black/15 text-sm">{quote.productName}</td>
                   <td className="px-3.5 py-2.5 border border-black/15 text-sm">
@@ -187,12 +302,60 @@ export default function Submissions() {
                   <td className="px-3.5 py-2.5 border border-black/15 text-sm whitespace-normal min-w-[220px]">
                     {formatFreezeDryerDetails(quote.freezeDryerDetails)}
                   </td>
+                  <td className="px-3.5 py-2.5 border border-black/15 text-sm">
+                    <button
+                      type="button"
+                      aria-label="Delete submission"
+                      title="Delete submission"
+                      className="inline-flex items-center justify-center w-8 h-8 rounded-md border border-[#ff6b6b] bg-transparent text-[#ff6b6b] cursor-pointer transition-all hover:bg-[#ff6b6b] hover:text-black hover:-translate-y-0.5 active:translate-y-0 disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:translate-y-0"
+                      onClick={() => setPendingDelete(quote)}
+                      disabled={deletingId === quote._id}
+                    >
+                      {deletingId === quote._id ? (
+                        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true" className="animate-spin">
+                          <path d="M21 12a9 9 0 1 1-9-9" />
+                        </svg>
+                      ) : (
+                        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                          <path d="M3 6h18" />
+                          <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+                          <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
+                          <path d="M10 11v6" />
+                          <path d="M14 11v6" />
+                        </svg>
+                      )}
+                    </button>
+                  </td>
                 </tr>
               ))}
             </tbody>
           </table>
         </div>
       )}
+
+      <ConfirmDialog
+        open={pendingDelete !== null}
+        title="Delete submission"
+        message={
+          pendingDelete
+            ? `Delete submission from "${[pendingDelete.firstName, pendingDelete.lastName].filter(Boolean).join(' ')}"? This can't be undone.`
+            : ''
+        }
+        confirmLabel="Delete"
+        confirming={deletingId === pendingDelete?._id}
+        onConfirm={confirmDelete}
+        onCancel={() => setPendingDelete(null)}
+      />
+
+      <ConfirmDialog
+        open={pendingBulkDelete}
+        title="Delete selected submissions"
+        message={`Delete ${selectedVisibleIds.length} selected submission${selectedVisibleIds.length > 1 ? 's' : ''}? This can't be undone.`}
+        confirmLabel="Delete"
+        confirming={bulkDeleting}
+        onConfirm={confirmBulkDelete}
+        onCancel={() => setPendingBulkDelete(false)}
+      />
     </div>
   );
 }
