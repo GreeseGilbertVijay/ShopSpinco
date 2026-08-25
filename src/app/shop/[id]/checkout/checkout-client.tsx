@@ -138,7 +138,7 @@ export default function CheckoutClient({ id }: { id: string }) {
     return (
       <div className="max-w-[960px] mx-auto p-8">
         <p>Product not found.</p>
-        <Link href="/shop">Back to shop</Link>
+        <Link href="/">Back to shop</Link>
       </div>
     );
   }

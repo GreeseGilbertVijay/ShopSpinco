@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { getProduct, type Product } from '@/lib/api';
@@ -13,8 +13,10 @@ export default function ProductDetailClient({ id }: { id: string }) {
   const [status, setStatus] = useState<'loading' | 'ready' | 'error'>('loading');
   const [selected, setSelected] = useState<Record<string, string>>({});
   const [activeTab, setActiveTab] = useState(0);
-  const [mainImage, setMainImage] = useState('');
+  const [activeImage, setActiveImage] = useState(0);
+  const [galleryPaused, setGalleryPaused] = useState(false);
   const [selectionError, setSelectionError] = useState(false);
+  const thumbStripRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     getProduct(id)
@@ -22,12 +24,24 @@ export default function ProductDetailClient({ id }: { id: string }) {
         setProduct(data);
         setSelected({});
         setActiveTab(0);
-        setMainImage(data.imageUrl || data.images?.[0] || '');
+        setActiveImage(0);
         setStatus('ready');
         setSelectionError(false);
       })
       .catch(() => setStatus('error'));
   }, [id]);
+
+  const galleryImages = product
+    ? [...new Set([product.imageUrl, ...(product.images || [])].filter(Boolean))]
+    : [];
+
+  useEffect(() => {
+    if (galleryPaused || galleryImages.length <= 1) return;
+    const timer = setInterval(() => {
+      setActiveImage((i) => (i + 1) % galleryImages.length);
+    }, 4000);
+    return () => clearInterval(timer);
+  }, [galleryPaused, galleryImages.length]);
 
   const shareUrl = typeof window !== 'undefined' ? window.location.href : '';
 
@@ -36,14 +50,25 @@ export default function ProductDetailClient({ id }: { id: string }) {
     return (
       <div className="max-w-[960px] mx-auto p-8">
         <p>Product not found.</p>
-        <Link href="/shop">Back to shop</Link>
+        <Link href="/">Back to shop</Link>
       </div>
     );
   }
 
   const groups = product.variationGroups || [];
   const tabs = product.tabs || [];
-  const galleryImages = [...new Set([product.imageUrl, ...(product.images || [])].filter(Boolean))];
+
+  function goToPrevImage() {
+    setActiveImage((i) => (i - 1 + galleryImages.length) % galleryImages.length);
+  }
+
+  function goToNextImage() {
+    setActiveImage((i) => (i + 1) % galleryImages.length);
+  }
+
+  function scrollThumbs(direction: -1 | 1) {
+    thumbStripRef.current?.scrollBy({ left: direction * 160, behavior: 'smooth' });
+  }
 
   function handleSelect(groupName: string, optionLabel: string) {
     setSelected({ ...selected, [groupName]: optionLabel });
@@ -65,7 +90,7 @@ export default function ProductDetailClient({ id }: { id: string }) {
   return (
     <div className="max-w-7xl mx-auto p-8 text-left bg-white text-black rounded-lg">
       <Link
-        href="/shop"
+        href="/"
         className="inline-flex items-center gap-1.5 mb-6 text-black/70 no-underline text-sm transition-colors hover:text-black"
       >
         &larr; Back to shop
@@ -73,26 +98,99 @@ export default function ProductDetailClient({ id }: { id: string }) {
 
       <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,2fr)_minmax(0,3fr)] gap-10 items-start">
         <div className="min-w-0 lg:sticky lg:top-8">
-          <div className="border border-black/15 rounded-xl overflow-hidden bg-black/[0.03]">
-            {mainImage && <img className="w-full aspect-square object-cover" src={mainImage} alt={product.name} />}
+          <div
+            className="relative border border-black/15 rounded-xl overflow-hidden bg-black/[0.03]"
+            onMouseEnter={() => setGalleryPaused(true)}
+            onMouseLeave={() => setGalleryPaused(false)}
+          >
+            {galleryImages.length > 0 && (
+              <img
+                className="w-full aspect-square object-cover"
+                src={galleryImages[activeImage]}
+                alt={product.name}
+              />
+            )}
+
+            {galleryImages.length > 1 && (
+              <>
+                <button
+                  type="button"
+                  aria-label="Previous image"
+                  onClick={goToPrevImage}
+                  className="absolute left-3 top-1/2 -translate-y-1/2 inline-flex items-center justify-center w-9 h-9 rounded-full bg-white/80 text-black border-0 cursor-pointer transition-all hover:bg-white hover:scale-105"
+                >
+                  <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                    <path d="M15 18l-6-6 6-6" />
+                  </svg>
+                </button>
+                <button
+                  type="button"
+                  aria-label="Next image"
+                  onClick={goToNextImage}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 inline-flex items-center justify-center w-9 h-9 rounded-full bg-white/80 text-black border-0 cursor-pointer transition-all hover:bg-white hover:scale-105"
+                >
+                  <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                    <path d="M9 18l6-6-6-6" />
+                  </svg>
+                </button>
+
+                <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5">
+                  {galleryImages.map((url, index) => (
+                    <button
+                      type="button"
+                      key={url}
+                      aria-label={`Go to image ${index + 1}`}
+                      onClick={() => setActiveImage(index)}
+                      className={`w-2 h-2 p-0 rounded-full border-0 cursor-pointer transition-all ${
+                        activeImage === index ? 'bg-white' : 'bg-white/50 hover:bg-white/80'
+                      }`}
+                    />
+                  ))}
+                </div>
+              </>
+            )}
           </div>
 
           {galleryImages.length > 1 && (
-            <div className="flex gap-2 overflow-x-auto pt-3 pb-1">
-              {galleryImages.map((url) => (
-                <button
-                  type="button"
-                  key={url}
-                  className={`flex-none w-16 h-16 p-0 rounded-md bg-transparent cursor-pointer overflow-hidden leading-none transition-all ${
-                    mainImage === url
-                      ? 'ring-2 ring-[#f29a4e]'
-                      : 'ring-1 ring-black/15 opacity-70 hover:opacity-100 hover:ring-black/40'
-                  }`}
-                  onClick={() => setMainImage(url!)}
-                >
-                  <img className="w-full h-full object-cover block" src={url} alt={product.name} />
-                </button>
-              ))}
+            <div className="flex items-center gap-2 pt-3 pb-1">
+              <button
+                type="button"
+                aria-label="Scroll thumbnails left"
+                onClick={() => scrollThumbs(-1)}
+                className="flex-none inline-flex items-center justify-center w-7 h-7 rounded-full border border-black/15 bg-white text-black cursor-pointer transition-all hover:border-[#f29a4e] hover:text-[#f29a4e]"
+              >
+                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <path d="M15 18l-6-6 6-6" />
+                </svg>
+              </button>
+
+              <div ref={thumbStripRef} className="flex gap-2 overflow-x-auto scroll-smooth">
+                {galleryImages.map((url, index) => (
+                  <button
+                    type="button"
+                    key={url}
+                    className={`flex-none w-16 h-16 p-0 rounded-md bg-transparent cursor-pointer overflow-hidden leading-none transition-all ${
+                      activeImage === index
+                        ? 'ring-2 ring-[#f29a4e]'
+                        : 'ring-1 ring-black/15 opacity-70 hover:opacity-100 hover:ring-black/40'
+                    }`}
+                    onClick={() => setActiveImage(index)}
+                  >
+                    <img className="w-full h-full object-cover block" src={url} alt={product.name} />
+                  </button>
+                ))}
+              </div>
+
+              <button
+                type="button"
+                aria-label="Scroll thumbnails right"
+                onClick={() => scrollThumbs(1)}
+                className="flex-none inline-flex items-center justify-center w-7 h-7 rounded-full border border-black/15 bg-white text-black cursor-pointer transition-all hover:border-[#f29a4e] hover:text-[#f29a4e]"
+              >
+                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <path d="M9 18l6-6-6-6" />
+                </svg>
+              </button>
             </div>
           )}
         </div>

@@ -21,7 +21,7 @@ export default function Navbar() {
   const isLoggedIn = Boolean(user);
 
   return (
-    <nav className="relative flex items-center justify-between px-4 sm:px-8 py-4 border-b border-black/15">
+    <nav className="fixed top-[10px] inset-x-0 z-50 h-16 flex items-center justify-between mx-[5%] px-2 bg-white border-[5px] border-solid border-[#f5f5f5] rounded-[50px]">
       <Link
         href="/"
         className="flex items-center gap-2 font-bold text-l no-underline text-inherit"
@@ -33,9 +33,6 @@ export default function Navbar() {
 
       <div className="hidden md:flex items-center gap-6">
         <Link className={linkCls} href="/">
-          Home
-        </Link>
-        <Link className={linkCls} href="/shop">
           Shop
         </Link>
         {user?.role === 'superAdmin' && (
@@ -74,9 +71,6 @@ export default function Navbar() {
       {menuOpen && (
         <div className="md:hidden absolute top-full left-0 right-0 flex flex-col gap-1 px-4 py-3 bg-white border-b border-black/15 shadow-[0_8px_16px_rgba(0,0,0,0.35)] z-50 text-left">
           <Link className={`${linkCls} py-2`} href="/" onClick={() => setMenuOpen(false)}>
-            Home
-          </Link>
-          <Link className={`${linkCls} py-2`} href="/shop" onClick={() => setMenuOpen(false)}>
             Shop
           </Link>
           {user?.role === 'superAdmin' && (

@@ -287,8 +287,8 @@ export default function ProductForm({
         )}
         {children}
       </div>
-      {status === 'success' && successMessage && <p className="success">{successMessage}</p>}
-      {status === 'error' && <p className="error">{error}</p>}
+      {!hideSubmit && status === 'success' && successMessage && <p className="success">{successMessage}</p>}
+      {!hideSubmit && status === 'error' && <p className="error">{error}</p>}
     </form>
   );
 }

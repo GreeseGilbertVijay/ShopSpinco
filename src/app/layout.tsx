@@ -19,7 +19,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <CheckoutSelectionProvider>
             <div className="app-shell">
               <Navbar />
-              <main className="flex-1 flex flex-col">{children}</main>
+              <main className="flex-1 flex flex-col pt-[74px]">{children}</main>
               <Footer />
             </div>
           </CheckoutSelectionProvider>
