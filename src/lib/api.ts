@@ -20,6 +20,7 @@ export interface Product {
   description: string;
   imageUrl: string;
   images: string[];
+  brochureUrl: string;
   variationGroups: VariationGroup[];
   tabs: ProductTab[];
   createdAt: string;
@@ -32,6 +33,7 @@ export interface ProductInput {
   description?: string;
   imageUrl?: string;
   images?: string[];
+  brochureUrl?: string;
   variationGroups?: VariationGroup[];
   tabs?: ProductTab[];
 }

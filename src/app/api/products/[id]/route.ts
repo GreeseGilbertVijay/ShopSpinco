@@ -23,7 +23,7 @@ export async function PUT(req: NextRequest, { params }: RouteContext) {
     requireSuperAdmin(req);
     const { id } = await params;
     await connectDB();
-    const { name, sku, description, imageUrl, images, variationGroups, tabs } = await req.json();
+    const { name, sku, description, imageUrl, images, brochureUrl, variationGroups, tabs } = await req.json();
 
     if (!name) {
       return NextResponse.json({ message: 'name is required' }, { status: 400 });
@@ -37,6 +37,7 @@ export async function PUT(req: NextRequest, { params }: RouteContext) {
         description,
         imageUrl,
         images: cleanImages(images),
+        brochureUrl: typeof brochureUrl === 'string' ? brochureUrl.trim() : '',
         variationGroups: cleanVariationGroups(variationGroups),
         tabs: cleanTabs(tabs),
       },

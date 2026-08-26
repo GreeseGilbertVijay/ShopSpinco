@@ -95,6 +95,21 @@ export async function POST(req: NextRequest) {
     const attachments = [{ filename: `quote-${quote._id}.pdf`, content: pdfBuffer }];
     const freezeDryerText = formatFreezeDryerDetails(cleanedFreezeDryerDetails);
 
+    let brochureAttachment: { filename: string; content: Buffer } | null = null;
+    if (product.brochureUrl) {
+      try {
+        const brochureRes = await fetch(product.brochureUrl);
+        if (brochureRes.ok) {
+          const content = Buffer.from(await brochureRes.arrayBuffer());
+          const filename = product.brochureUrl.split('/').pop()?.split('?')[0] || `${product.name}-brochure.pdf`;
+          brochureAttachment = { filename, content };
+        }
+      } catch (err) {
+        console.error('Brochure download failed:', err);
+      }
+    }
+    const customerAttachments = brochureAttachment ? [...attachments, brochureAttachment] : attachments;
+
     await Promise.all([
       sendMail({
         to: process.env.ADMIN_EMAIL,
@@ -105,8 +120,8 @@ export async function POST(req: NextRequest) {
       sendMail({
         to: email,
         subject: `Your quote request for ${product.name}`,
-        text: `Hi ${firstName},\n\nThanks for your quote request for ${product.name}. We've attached a summary of your request and will follow up shortly with pricing and availability.`,
-        attachments,
+        text: `Hi ${firstName},\n\nThanks for your quote request for ${product.name}. We've attached a summary of your request${brochureAttachment ? ' along with our product brochure' : ''} and will follow up shortly with pricing and availability.`,
+        attachments: customerAttachments,
       }),
     ]);
   } catch (err) {

@@ -21,6 +21,7 @@ export interface IProduct extends Document {
   description: string;
   imageUrl: string;
   images: string[];
+  brochureUrl: string;
   variationGroups: VariationGroup[];
   tabs: ProductTab[];
   createdAt: Date;
@@ -61,6 +62,7 @@ const productSchema = new Schema<IProduct>(
     description: { type: String, default: '' },
     imageUrl: { type: String, default: '' },
     images: { type: [String], default: [] },
+    brochureUrl: { type: String, default: '', trim: true },
     variationGroups: { type: [variationGroupSchema], default: [] },
     tabs: { type: [tabSchema], default: [] },
   },

@@ -75,6 +75,7 @@ export default function ProductForm({
     sku: initialValues?.sku || '',
     description: initialValues?.description || '',
     imageUrl: initialValues?.imageUrl || '',
+    brochureUrl: initialValues?.brochureUrl || '',
   });
   const [groups, setGroups] = useState<FormGroup[]>(toFormGroups(initialValues?.variationGroups));
   const [tabs, setTabs] = useState<FormTab[]>(toFormTabs(initialValues?.tabs));
@@ -178,6 +179,14 @@ export default function ProductForm({
         onChange={handleChange}
       />
       <input className={inputCls} name="imageUrl" placeholder="Image URL" value={form.imageUrl} onChange={handleChange} />
+      <input
+        className={inputCls}
+        name="brochureUrl"
+        placeholder="Brochure Link"
+        value={form.brochureUrl}
+        onChange={handleChange}
+      />
+      <p className={hintCls}>Optional. Included in the customer&apos;s quote confirmation email when set.</p>
 
       <h2 className={sectionHeadingCls}>Product Gallery</h2>
       <p className={hintCls}>Optional. Extra images shown as a scroller below the main image on the product page.</p>
