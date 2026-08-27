@@ -51,6 +51,7 @@ export interface FreezeDryerDetails {
   currentSetup: string[];
   expectedUsage: string[];
   purchaseTimeline: string[];
+  primaryApplicationField: string[];
   comments: string;
 }
 

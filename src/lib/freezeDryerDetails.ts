@@ -8,6 +8,7 @@ export const FREEZE_DRYER_LIST_FIELDS = [
   'currentSetup',
   'expectedUsage',
   'purchaseTimeline',
+  'primaryApplicationField',
 ] as const;
 
 export function cleanFreezeDryerDetails(details: unknown): FreezeDryerDetails | undefined {

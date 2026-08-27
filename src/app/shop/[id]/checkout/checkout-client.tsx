@@ -19,49 +19,9 @@ type FreezeDryerListField = keyof Omit<FreezeDryerDetails, 'comments'>;
 
 const FREEZE_DRYER_QUESTIONS: { key: FreezeDryerListField; label: string; options: string[] }[] = [
   {
-    key: 'organizationSegment',
-    label: '1. Organization Segment',
-    options: [
-      'Pharmaceutical',
-      'Biopharmaceutical',
-      'Biotechnology',
-      'CRO',
-      'CDMO',
-      'Research Institute',
-      'University',
-      'Food & Nutraceutical',
-      'Other',
-    ],
-  },
-  {
-    key: 'primaryApplication',
-    label: '2. Primary Application',
-    options: ['Formulation Development', 'Process Development', 'R&D', 'Scale-up', 'Small-scale Production', 'Other'],
-  },
-  {
-    key: 'sampleProductType',
-    label: '3. Sample / Product Type',
-    options: ['Biologics', 'Vaccines', 'Pharmaceuticals', 'Proteins & Peptides', 'Microorganisms', 'Food & Nutraceuticals', 'Other'],
-  },
-  {
-    key: 'intendedPurpose',
-    label: '4. Intended Purpose',
-    options: ['Research', 'Method or Cycle Development', 'Process Optimization', 'Scale-up', 'Small-scale Production'],
-  },
-  {
-    key: 'currentSetup',
-    label: '5. Current Freeze-Drying Setup',
-    options: ['First Freeze Dryer', 'Existing Freeze Dryer', 'Replacement or Upgrade'],
-  },
-  {
-    key: 'expectedUsage',
-    label: '6. Expected Usage',
-    options: ['Occasional', 'Regular', 'High-frequency'],
-  },
-  {
-    key: 'purchaseTimeline',
-    label: '7. Purchase Timeline',
-    options: ['Immediate', '0–3 Months', '3–6 Months', '6–12 Months', 'Exploring Options'],
+    key: 'primaryApplicationField',
+    label: '1. What is Primary Application Field',
+    options: ['Food', 'Pharma', 'Agro', 'Diagnostics', 'Others'],
   },
 ];
 
@@ -74,6 +34,7 @@ function emptyFreezeDryerDetails(): FreezeDryerDetails {
     currentSetup: [],
     expectedUsage: [],
     purchaseTimeline: [],
+    primaryApplicationField: [],
     comments: '',
   };
 }
@@ -157,6 +118,20 @@ export default function CheckoutClient({ id }: { id: string }) {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+
+    if (isFreezeDryer) {
+      if (freezeDryerDetails.primaryApplicationField.length === 0) {
+        setStatus('error');
+        setError('Please select a Primary Application Field.');
+        return;
+      }
+      if (!freezeDryerDetails.comments.trim()) {
+        setStatus('error');
+        setError('Please provide a brief explanation.');
+        return;
+      }
+    }
+
     setStatus('submitting');
     setError('');
     setProgress(0);
@@ -217,19 +192,19 @@ export default function CheckoutClient({ id }: { id: string }) {
       <Link href={`/shop/${id}`} className="inline-block mb-4 text-inherit no-underline">
         &larr; Back to product
       </Link>
-      <h1 className="text-3xl sm:text-4xl font-bold text-black! mb-6">Checkout</h1>
+      <h1 className="text-3xl sm:text-4xl font-bold text-black! mb-6">Quote</h1>
 
       <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_400px] gap-2 items-start">
         <form onSubmit={handleSubmit} className="grid grid-cols-1 sm:grid-cols-2 gap-3 w-full max-w-2xl order-2 lg:order-1">
-          <input className={inputCls} name="firstName" placeholder="First name" value={form.firstName} onChange={handleChange} required />
-          <input className={inputCls} name="lastName" placeholder="Last name (optional)" value={form.lastName} onChange={handleChange} />
-          <input className={inputCls} name="email" type="email" placeholder="Your email" value={form.email} onChange={handleChange} required />
+          <input className={inputCls} name="firstName" placeholder="First name *" value={form.firstName} onChange={handleChange} required />
+          <input className={inputCls} name="lastName" placeholder="Last name *" value={form.lastName} onChange={handleChange} required />
+          <input className={inputCls} name="email" type="email" placeholder="Your email *" value={form.email} onChange={handleChange} required />
           <input
             className={inputCls}
             name="phone"
             type="tel"
             inputMode="numeric"
-            placeholder="Phone number (10 digits)"
+            placeholder="Phone number (10 digits) *"
             value={form.phone}
             onChange={handleChange}
             pattern="[0-9]{10}"
@@ -237,22 +212,22 @@ export default function CheckoutClient({ id }: { id: string }) {
             title="Enter a 10-digit phone number"
             required
           />
-          <input className={inputCls} name="companyName" placeholder="Company name" value={form.companyName} onChange={handleChange} required />
-          <input className={inputCls} name="role" placeholder="Role" value={form.role} onChange={handleChange} required />
+          <input className={inputCls} name="companyName" placeholder="Company name *" value={form.companyName} onChange={handleChange} required />
+          <input className={inputCls} name="role" placeholder="Role *" value={form.role} onChange={handleChange} required />
           <input
             className={`${inputCls} sm:col-span-2`}
             name="streetAddress"
-            placeholder="Street address"
+            placeholder="Street address *"
             value={form.streetAddress}
             onChange={handleChange}
             required
           />
-          <input className={inputCls} name="city" placeholder="Town/City" value={form.city} onChange={handleChange} required />
+          <input className={inputCls} name="city" placeholder="Town/City *" value={form.city} onChange={handleChange} required />
           <input
             className={inputCls}
             name="state"
             list="indian-states"
-            placeholder="State"
+            placeholder="State *"
             value={form.state}
             onChange={handleChange}
             autoComplete="off"
@@ -268,7 +243,7 @@ export default function CheckoutClient({ id }: { id: string }) {
             name="pincode"
             type="text"
             inputMode="numeric"
-            placeholder="Pincode (6 digits)"
+            placeholder="Pincode (6 digits) *"
             value={form.pincode}
             onChange={handleChange}
             pattern="[0-9]{6}"
@@ -284,7 +259,7 @@ export default function CheckoutClient({ id }: { id: string }) {
 
               {FREEZE_DRYER_QUESTIONS.map((question) => (
                 <div className={checkboxGroupCls} key={question.key}>
-                  <span className={checkboxLabelCls}>{question.label}</span>
+                  <span className={checkboxLabelCls}>{question.label} *</span>
                   <MultiSelectDropdown
                     options={question.options}
                     selected={freezeDryerDetails[question.key]}
@@ -295,13 +270,14 @@ export default function CheckoutClient({ id }: { id: string }) {
               ))}
 
               <div className={checkboxGroupCls}>
-                <span className={checkboxLabelCls}>8. Requirement / Comments</span>
+                <span className={checkboxLabelCls}>2. Brief explanation *</span>
                 <textarea
                   className={inputCls}
                   placeholder="Tell us more about your requirement"
                   value={freezeDryerDetails.comments}
                   onChange={handleFreezeDryerCommentsChange}
                   rows={3}
+                  required
                 />
               </div>
             </>

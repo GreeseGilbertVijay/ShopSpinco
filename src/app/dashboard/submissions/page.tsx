@@ -14,6 +14,7 @@ const FREEZE_DRYER_LIST_FIELDS: (keyof Omit<FreezeDryerDetails, 'comments'>)[] =
   'currentSetup',
   'expectedUsage',
   'purchaseTimeline',
+  'primaryApplicationField',
 ];
 
 function formatFreezeDryerDetails(details?: FreezeDryerDetails) {

@@ -13,6 +13,7 @@ export interface FreezeDryerDetails {
   currentSetup: string[];
   expectedUsage: string[];
   purchaseTimeline: string[];
+  primaryApplicationField: string[];
   comments: string;
 }
 
@@ -44,6 +45,7 @@ const freezeDryerDetailsSchema = new Schema<FreezeDryerDetails>(
     currentSetup: { type: [String], default: [] },
     expectedUsage: { type: [String], default: [] },
     purchaseTimeline: { type: [String], default: [] },
+    primaryApplicationField: { type: [String], default: [] },
     comments: { type: String, default: '', trim: true },
   },
   { _id: false }
