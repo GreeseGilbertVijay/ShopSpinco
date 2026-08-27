@@ -20,7 +20,7 @@ type FreezeDryerListField = keyof Omit<FreezeDryerDetails, 'comments'>;
 const FREEZE_DRYER_QUESTIONS: { key: FreezeDryerListField; label: string; options: string[] }[] = [
   {
     key: 'primaryApplicationField',
-    label: '1. What is Primary Application Field',
+    label: 'What is Primary Application Field',
     options: ['Food', 'Pharma', 'Agro', 'Diagnostics', 'Others'],
   },
 ];
@@ -255,7 +255,7 @@ export default function CheckoutClient({ id }: { id: string }) {
           {isFreezeDryer && (
             <>
               <h2 className={sectionHeadingCls}>Freeze Dryer Requirements</h2>
-              <p className={hintCls}>Help us tailor your quote — select all that apply.</p>
+              <p className={hintCls}>Help us tailor your quote — Select.</p>
 
               {FREEZE_DRYER_QUESTIONS.map((question) => (
                 <div className={checkboxGroupCls} key={question.key}>
@@ -264,13 +264,13 @@ export default function CheckoutClient({ id }: { id: string }) {
                     options={question.options}
                     selected={freezeDryerDetails[question.key]}
                     onChange={(next) => setFreezeDryerField(question.key, next)}
-                    placeholder="Select all that apply"
+                    placeholder="Select Options"
                   />
                 </div>
               ))}
 
               <div className={checkboxGroupCls}>
-                <span className={checkboxLabelCls}>2. Brief explanation *</span>
+                <span className={checkboxLabelCls}>Brief Explanation *</span>
                 <textarea
                   className={inputCls}
                   placeholder="Tell us more about your requirement"
