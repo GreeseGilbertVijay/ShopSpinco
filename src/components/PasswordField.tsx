@@ -1,19 +1,30 @@
 'use client';
 
-import { useState, type InputHTMLAttributes } from 'react';
+import { useState, type InputHTMLAttributes, type ReactNode } from 'react';
 
-export default function PasswordField({ className = '', ...props }: InputHTMLAttributes<HTMLInputElement>) {
+type PasswordFieldProps = InputHTMLAttributes<HTMLInputElement> & { icon?: ReactNode };
+
+export default function PasswordField({ className = '', icon, ...props }: PasswordFieldProps) {
   const [visible, setVisible] = useState(false);
 
   return (
     <div className="relative">
-      <input {...props} type={visible ? 'text' : 'password'} className={`${className} w-full pr-10`} />
+      {icon && (
+        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 z-10 pointer-events-none">
+          {icon}
+        </span>
+      )}
+      <input
+        {...props}
+        type={visible ? 'text' : 'password'}
+        className={`${className} w-full pr-10 ${icon ? 'pl-10' : ''}`}
+      />
       <button
         type="button"
         onClick={() => setVisible((v) => !v)}
         aria-label={visible ? 'Hide password' : 'Show password'}
         aria-pressed={visible}
-        className="absolute right-0 top-0 h-full px-3 flex items-center justify-center bg-transparent border-none text-black/50 cursor-pointer hover:text-black/80"
+        className="absolute right-0 top-0 h-full px-3 flex items-center justify-center bg-transparent border-none text-gray-400 cursor-pointer hover:text-gray-700"
       >
         {visible ? (
           <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">

@@ -23,7 +23,7 @@ function ToolbarButton({
       aria-label={label}
       onClick={onClick}
       className={`px-2 py-1 rounded text-sm border transition-colors ${
-        active ? 'border-[#f29a4e] bg-[#f29a4e]/15 text-inherit' : 'border-transparent hover:border-black/30 text-inherit'
+        active ? 'border-accent bg-accent-subtle text-gray-900' : 'border-transparent hover:border-gray-300 text-gray-700'
       }`}
     >
       {children}
@@ -62,8 +62,8 @@ export default function WysiwygEditor({ value, onChange, placeholder }: WysiwygE
   if (!editor) return null;
 
   return (
-    <div className="border border-black/15 rounded-md overflow-hidden text-left">
-      <div className="flex flex-wrap gap-1 border-b border-black/15 p-1">
+    <div className="border border-gray-300 rounded-lg overflow-hidden text-left">
+      <div className="flex flex-wrap gap-1 border-b border-gray-200 bg-gray-50 p-1">
         <ToolbarButton label="Bold" active={editor.isActive('bold')} onClick={() => editor.chain().focus().toggleBold().run()}>
           <strong>B</strong>
         </ToolbarButton>

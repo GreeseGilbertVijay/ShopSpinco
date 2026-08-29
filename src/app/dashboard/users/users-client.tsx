@@ -4,6 +4,17 @@ import { useEffect, useState } from 'react';
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { getUsers, ApiError, type User } from '@/lib/api';
+import { TableContainer, Table, Thead, Th, Tr, Td } from '@/components/ui/Table';
+import Tabs from '@/components/ui/Tabs';
+import Badge from '@/components/ui/Badge';
+import EmptyState from '@/components/ui/EmptyState';
+import { SkeletonBlock } from '@/components/ui/Skeleton';
+
+const FILTER_TABS = [
+  { key: 'all', label: 'All Users' },
+  { key: 'customer', label: 'Customers' },
+  { key: 'superAdmin', label: 'Admins' },
+];
 
 export default function UsersClient() {
   const router = useRouter();
@@ -37,61 +48,54 @@ export default function UsersClient() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filter]);
 
-  const tabCls = (value: string) =>
-    `px-[0.9rem] py-[0.55rem] rounded-md border border-black/15 cursor-pointer transition-all ${
-      filter === value ? 'bg-[#f29a4e] text-black' : 'bg-transparent text-black hover:bg-black/10'
-    }`;
-
   return (
-    <div className="max-w-6xl p-8 text-left bg-white text-black rounded-lg">
-      <Link href="/dashboard" className="inline-block mb-4 text-inherit no-underline">
+    <div className="max-w-6xl mx-auto w-full p-4 sm:p-8 text-left">
+      <Link href="/dashboard" className="inline-flex items-center gap-1 mb-4 text-sm text-gray-500 no-underline hover:text-gray-900 transition-colors">
         &larr; Back to dashboard
       </Link>
-      <h1 className="text-4xl font-bold text-black!">Users</h1>
+      <h1 className="text-3xl sm:text-4xl font-bold text-gray-900! mb-6">Users</h1>
 
-      <div className="flex items-center gap-3 mt-4">
-        <button type="button" className={tabCls('all')} onClick={() => handleFilterChange('all')}>
-          All Users
-        </button>
-        <button type="button" className={tabCls('customer')} onClick={() => handleFilterChange('customer')}>
-          Customers
-        </button>
-        <button type="button" className={tabCls('superAdmin')} onClick={() => handleFilterChange('superAdmin')}>
-          Admins
-        </button>
-      </div>
+      <Tabs tabs={FILTER_TABS} active={filter} onChange={handleFilterChange} className="mb-6" />
 
-      {status === 'loading' && <p className="text-black/80 mt-6">Loading users...</p>}
-      {status === 'error' && <p className="text-black/80 mt-6">Could not load users.</p>}
-      {status === 'ready' && users.length === 0 && <p className="text-black/80 mt-6">No users found.</p>}
+      {status === 'loading' && (
+        <div className="flex flex-col gap-2">
+          {Array.from({ length: 5 }).map((_, i) => (
+            <SkeletonBlock className="h-10 w-full" key={i} />
+          ))}
+        </div>
+      )}
+      {status === 'error' && <EmptyState title="Could not load users" description="Please try again shortly." />}
+      {status === 'ready' && users.length === 0 && <EmptyState title="No users found" />}
 
       {status === 'ready' && users.length > 0 && (
-        <div className="overflow-x-auto mt-6">
-          <table className="w-full border-collapse whitespace-nowrap">
-            <thead>
+        <TableContainer>
+          <Table className="whitespace-nowrap">
+            <Thead>
               <tr>
                 {['Name', 'Email', 'Role', 'Verified', 'Registered'].map((h) => (
-                  <th key={h} className="px-3.5 py-2.5 border border-black/15 text-left text-sm font-semibold bg-[#f29a4e]/10">
-                    {h}
-                  </th>
+                  <Th key={h}>{h}</Th>
                 ))}
               </tr>
-            </thead>
+            </Thead>
             <tbody>
               {users.map((user) => (
-                <tr key={user._id}>
-                  <td className="px-3.5 py-2.5 border border-black/15 text-sm">{user.name || '—'}</td>
-                  <td className="px-3.5 py-2.5 border border-black/15 text-sm">{user.email}</td>
-                  <td className="px-3.5 py-2.5 border border-black/15 text-sm">{user.role}</td>
-                  <td className="px-3.5 py-2.5 border border-black/15 text-sm">
-                    {user.role === 'superAdmin' || user.isVerified ? 'Yes' : 'No'}
-                  </td>
-                  <td className="px-3.5 py-2.5 border border-black/15 text-sm">{new Date(user.createdAt).toLocaleString()}</td>
-                </tr>
+                <Tr key={user._id}>
+                  <Td>{user.name || '—'}</Td>
+                  <Td>{user.email}</Td>
+                  <Td>
+                    <Badge tone={user.role === 'superAdmin' ? 'accent' : 'neutral'}>{user.role}</Badge>
+                  </Td>
+                  <Td>
+                    <Badge tone={user.role === 'superAdmin' || user.isVerified ? 'success' : 'neutral'}>
+                      {user.role === 'superAdmin' || user.isVerified ? 'Yes' : 'No'}
+                    </Badge>
+                  </Td>
+                  <Td>{new Date(user.createdAt).toLocaleString()}</Td>
+                </Tr>
               ))}
             </tbody>
-          </table>
-        </div>
+          </Table>
+        </TableContainer>
       )}
     </div>
   );

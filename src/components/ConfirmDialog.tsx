@@ -23,26 +23,26 @@ export default function ConfirmDialog({
 
   return (
     <div
-      className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-sm px-4"
+      className="fixed inset-0 z-[100] flex items-center justify-center bg-gray-950/50 backdrop-blur-sm px-4"
       role="dialog"
       aria-modal="true"
       aria-labelledby="confirm-dialog-title"
       onClick={onCancel}
     >
       <div
-        className="w-full max-w-sm rounded-lg bg-white p-6 text-left shadow-xl"
+        className="w-full max-w-sm rounded-xl bg-white p-6 text-left shadow-lifted border border-gray-100"
         onClick={(e) => e.stopPropagation()}
       >
-        <h2 id="confirm-dialog-title" className="text-lg font-semibold text-black!">
+        <h2 id="confirm-dialog-title" className="text-lg font-semibold text-gray-900!">
           {title}
         </h2>
-        <p className="mt-2 text-sm text-black/70">{message}</p>
+        <p className="mt-2 text-sm text-gray-600">{message}</p>
         <div className="mt-6 flex justify-end gap-3">
           <button
             type="button"
             onClick={onCancel}
             disabled={confirming}
-            className="px-[0.9rem] py-[0.55rem] rounded-md border border-black/15 bg-transparent text-black cursor-pointer transition-all hover:bg-black/10 disabled:opacity-60 disabled:cursor-not-allowed"
+            className="px-4 py-2 rounded-lg border border-gray-300 bg-white text-gray-700 cursor-pointer transition-all hover:bg-gray-50 disabled:opacity-60 disabled:cursor-not-allowed"
           >
             {cancelLabel}
           </button>
@@ -50,7 +50,7 @@ export default function ConfirmDialog({
             type="button"
             onClick={onConfirm}
             disabled={confirming}
-            className="px-[0.9rem] py-[0.55rem] rounded-md border border-[#ff6b6b] bg-[#ff6b6b] text-black cursor-pointer transition-all hover:bg-[#ff5252] disabled:opacity-60 disabled:cursor-not-allowed"
+            className="px-4 py-2 rounded-lg border border-danger bg-danger text-white cursor-pointer transition-all hover:bg-danger-hover disabled:opacity-60 disabled:cursor-not-allowed"
           >
             {confirming ? 'Deleting...' : confirmLabel}
           </button>

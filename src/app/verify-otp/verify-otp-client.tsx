@@ -4,6 +4,8 @@ import { useEffect, useRef, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { verifyOtp, resendOtp } from '@/lib/api';
 import { useAuth } from '@/components/AuthProvider';
+import AuthLayout from '@/components/ui/AuthLayout';
+import { buttonClasses } from '@/components/ui/Button';
 
 const OTP_LENGTH = 6;
 const RESEND_COOLDOWN = 30;
@@ -96,14 +98,16 @@ export default function VerifyOtpClient() {
   }
 
   return (
-    <div className="max-w-2xl mx-auto p-8 text-left bg-white text-black rounded-lg">
-      <h1 className="text-4xl font-bold text-black!">Verify Your Email</h1>
-      <p className="mt-2 text-black/70">
-        We sent a {OTP_LENGTH}-digit code to <span className="font-semibold">{email}</span>. Enter it below to
-        activate your account.
-      </p>
-
-      <form onSubmit={handleSubmit} className="flex flex-col gap-4 w-full max-w-md mt-6">
+    <AuthLayout
+      title="Verify Your Email"
+      subtitle={
+        <>
+          We sent a {OTP_LENGTH}-digit code to <span className="font-semibold text-gray-800">{email}</span>. Enter
+          it below to activate your account.
+        </>
+      }
+    >
+      <form onSubmit={handleSubmit} className="flex flex-col gap-4 w-full">
         <div className="flex gap-2">
           {digits.map((digit, index) => (
             <input
@@ -118,32 +122,32 @@ export default function VerifyOtpClient() {
               value={digit}
               onChange={(e) => handleDigitChange(index, e.target.value)}
               onKeyDown={(e) => handleKeyDown(index, e)}
-              className="w-12 h-14 text-center text-2xl font-bold rounded-md border border-black/15 bg-transparent text-black focus:outline-none focus:border-[#f29a4e]"
+              className="w-12 h-14 text-center text-2xl font-bold rounded-lg border border-gray-300 bg-white text-gray-900 focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent/20 transition-colors"
             />
           ))}
         </div>
 
         <button
           type="submit"
-          className="inline-block px-6 py-2.5 bg-[#f29a4e] text-black rounded-md cursor-pointer no-underline text-base transition-all hover:bg-[#dc8639] hover:-translate-y-0.5 hover:shadow-[0_6px_14px_rgba(242,154,78,0.35)] active:translate-y-0 active:shadow-none disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:translate-y-0 disabled:hover:shadow-none"
+          className={buttonClasses({ size: 'lg', className: 'w-full sm:w-auto' })}
           disabled={status === 'submitting'}
         >
           {status === 'submitting' ? 'Verifying...' : 'Verify & Create Account'}
         </button>
         {status === 'error' && <p className="error">{error}</p>}
 
-        <p className="text-sm text-black/70">
+        <p className="text-sm text-gray-600">
           Didn&apos;t get the code?{' '}
           <button
             type="button"
             onClick={handleResend}
             disabled={cooldown > 0 || resendStatus === 'sending'}
-            className="bg-transparent border-none p-0 font-[inherit] text-[#f29a4e] cursor-pointer hover:underline disabled:opacity-60 disabled:cursor-not-allowed disabled:no-underline"
+            className="bg-transparent border-none p-0 font-[inherit] text-accent-hover cursor-pointer hover:underline disabled:opacity-60 disabled:cursor-not-allowed disabled:no-underline"
           >
             {resendStatus === 'sending' ? 'Sending...' : cooldown > 0 ? `Resend code (${cooldown}s)` : 'Resend code'}
           </button>
         </p>
       </form>
-    </div>
+    </AuthLayout>
   );
 }

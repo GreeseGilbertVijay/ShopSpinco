@@ -45,9 +45,9 @@ export default function MultiSelectDropdown({
         onClick={() => setOpen((v) => !v)}
         aria-haspopup="listbox"
         aria-expanded={open}
-        className="w-full flex items-center justify-between gap-2 px-3 py-2.5 rounded-md border border-black/15 bg-transparent text-left text-black focus:outline-none focus:border-[#f29a4e]"
+        className="w-full flex items-center justify-between gap-2 px-3 py-2.5 rounded-lg border border-gray-300 bg-white text-left text-gray-900 focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent/20 transition-colors"
       >
-        <span className={`truncate ${selected.length === 0 ? 'text-black/40' : ''}`}>
+        <span className={`truncate ${selected.length === 0 ? 'text-gray-400' : ''}`}>
           {selected.length === 0 ? placeholder : selected.join(', ')}
         </span>
         <svg
@@ -60,7 +60,7 @@ export default function MultiSelectDropdown({
           strokeLinecap="round"
           strokeLinejoin="round"
           aria-hidden="true"
-          className={`shrink-0 text-black/50 transition-transform ${open ? 'rotate-180' : ''}`}
+          className={`shrink-0 text-gray-400 transition-transform ${open ? 'rotate-180' : ''}`}
         >
           <path d="m6 9 6 6 6-6" />
         </svg>
@@ -70,7 +70,7 @@ export default function MultiSelectDropdown({
         <div
           role="listbox"
           aria-multiselectable="true"
-          className="absolute z-20 mt-1 w-full max-h-56 overflow-y-auto rounded-md border border-black/15 bg-white shadow-lg py-1"
+          className="absolute z-20 mt-1 w-full max-h-56 overflow-y-auto rounded-lg border border-gray-200 bg-white shadow-elevated py-1"
         >
           {options.map((option) => {
             const isSelected = selected.includes(option);
@@ -79,23 +79,23 @@ export default function MultiSelectDropdown({
                 key={option}
                 role="option"
                 aria-selected={isSelected}
-                className="flex items-center gap-2 px-3 py-2 text-sm text-black/80 cursor-pointer hover:bg-black/[0.04]"
+                className="flex items-center gap-2 px-3 py-2 text-sm text-gray-700 cursor-pointer hover:bg-gray-50"
               >
                 <span className="relative inline-flex items-center justify-center w-4 h-4 shrink-0">
                   <input
                     type="checkbox"
                     checked={isSelected}
                     onChange={() => toggleOption(option)}
-                    className="appearance-none w-4 h-4 rounded-sm border border-black bg-white checked:bg-white focus:outline-none"
+                    className="appearance-none w-4 h-4 rounded-sm border border-gray-400 bg-white checked:bg-white checked:border-accent focus:outline-none"
                   />
                   {isSelected && (
                     <svg
-                      className="pointer-events-none absolute inset-0 m-auto"
+                      className="pointer-events-none absolute inset-0 m-auto text-accent-hover"
                       viewBox="0 0 24 24"
                       width="12"
                       height="12"
                       fill="none"
-                      stroke="black"
+                      stroke="currentColor"
                       strokeWidth="3"
                       strokeLinecap="round"
                       strokeLinejoin="round"

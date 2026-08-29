@@ -3,15 +3,15 @@
 import { useState, type ReactNode } from 'react';
 import WysiwygEditor from './WysiwygEditor';
 import type { Product, ProductInput, VariationGroup, ProductTab } from '@/lib/api';
+import { inputClassName } from '@/components/ui/Input';
+import { buttonClasses } from '@/components/ui/Button';
+import Card from '@/components/ui/Card';
 
-const inputCls =
-  'px-3 py-2.5 rounded-md border border-black/15 bg-transparent text-black placeholder-black/40 focus:outline-none focus:border-[#f29a4e]';
-const hintCls = 'text-sm text-black/60 -mt-1 mb-1';
-const sectionHeadingCls = 'text-lg font-semibold text-black! mt-2';
-const secondaryBtnCls =
-  'self-start px-[0.9rem] py-[0.4rem] rounded-md border border-[#f29a4e] bg-transparent text-black cursor-pointer transition-all hover:bg-[#f29a4e] hover:-translate-y-0.5 active:translate-y-0';
-const removeBtnCls =
-  'px-[0.7rem] py-[0.4rem] rounded-md border border-[#ff6b6b] bg-transparent text-[#ff6b6b] cursor-pointer whitespace-nowrap transition-all hover:bg-[#ff6b6b] hover:text-black hover:-translate-y-0.5 active:translate-y-0';
+const inputCls = inputClassName;
+const hintCls = 'text-sm text-gray-500 -mt-1 mb-1';
+const sectionHeadingCls = 'text-lg font-semibold text-gray-900! mt-2';
+const secondaryBtnCls = buttonClasses({ variant: 'secondary', size: 'sm', className: 'self-start' });
+const removeBtnCls = buttonClasses({ variant: 'danger', size: 'sm', className: 'whitespace-nowrap' });
 
 interface FormGroup {
   name: string;
@@ -215,7 +215,7 @@ export default function ProductForm({
       </p>
 
       {groups.map((group, groupIndex) => (
-        <div className="border border-black/15 rounded-lg p-3 flex flex-col gap-2" key={groupIndex}>
+        <Card className="p-3 flex flex-col gap-2" key={groupIndex}>
           <div className="flex gap-2">
             <input
               className={`${inputCls} flex-1`}
@@ -251,7 +251,7 @@ export default function ProductForm({
           <button type="button" className={secondaryBtnCls} onClick={() => addOption(groupIndex)}>
             + Add option
           </button>
-        </div>
+        </Card>
       ))}
 
       <button type="button" className={secondaryBtnCls} onClick={addGroup}>
@@ -264,7 +264,7 @@ export default function ProductForm({
       </p>
 
       {tabs.map((tab, tabIndex) => (
-        <div className="border border-black/15 rounded-lg p-3 flex flex-col gap-2" key={tabIndex}>
+        <Card className="p-3 flex flex-col gap-2" key={tabIndex}>
           <div className="flex gap-2">
             <input
               className={`${inputCls} flex-1`}
@@ -277,7 +277,7 @@ export default function ProductForm({
             </button>
           </div>
           <WysiwygEditor placeholder="Tab content" value={tab.content} onChange={(html) => updateTab(tabIndex, 'content', html)} />
-        </div>
+        </Card>
       ))}
 
       <button type="button" className={secondaryBtnCls} onClick={addTab}>
@@ -288,7 +288,7 @@ export default function ProductForm({
         {!hideSubmit && (
           <button
             type="submit"
-            className="inline-block mt-4 px-6 py-2.5 bg-[#f29a4e] text-black rounded-md cursor-pointer no-underline text-base transition-all hover:bg-[#dc8639] hover:-translate-y-0.5 hover:shadow-[0_6px_14px_rgba(242,154,78,0.35)] active:translate-y-0 active:shadow-none disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:translate-y-0 disabled:hover:shadow-none"
+            className={buttonClasses({ size: 'lg', className: 'mt-4' })}
             disabled={status === 'submitting'}
           >
             {status === 'submitting' ? 'Saving...' : submitLabel}

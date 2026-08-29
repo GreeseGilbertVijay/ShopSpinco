@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import ProductForm from '@/components/ProductForm';
 import { createProduct, type ProductInput } from '@/lib/api';
+import FormActionBar from '@/components/ui/FormActionBar';
 
 export default function CreateProduct() {
   const [formKey, setFormKey] = useState(0);
@@ -23,17 +24,8 @@ export default function CreateProduct() {
   }
 
   return (
-    <div className="max-w-7xl p-8 pr-48 text-left bg-white text-black rounded-lg relative">
-      <button
-        type="submit"
-        form="product-form"
-        disabled={status === 'submitting'}
-        className="fixed top-24 right-16 z-50 px-6 py-2.5 bg-[#f29a4e] text-black rounded-md cursor-pointer text-base font-medium shadow-[0_6px_14px_rgba(0,0,0,0.35)] transition-all hover:bg-[#dc8639] hover:-translate-y-0.5 hover:shadow-[0_8px_18px_rgba(242,154,78,0.4)] active:translate-y-0 disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:translate-y-0"
-      >
-        {status === 'submitting' ? 'Saving...' : 'Create Product'}
-      </button>
-
-      <h1 className="text-4xl font-bold text-black!">Create Product</h1>
+    <div className="max-w-4xl mx-auto w-full p-4 sm:p-8 text-left">
+      <h1 className="text-3xl sm:text-4xl font-bold text-gray-900! mb-6">Create Product</h1>
       <ProductForm
         key={formKey}
         onSubmit={handleSubmit}
@@ -42,6 +34,14 @@ export default function CreateProduct() {
         error={error}
         successMessage="Product created."
         hideSubmit
+      />
+      <FormActionBar
+        formId="product-form"
+        submitLabel="Create Product"
+        status={status}
+        successMessage="Product created."
+        errorMessage={error}
+        cancelHref="/dashboard/products"
       />
     </div>
   );

@@ -5,6 +5,10 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { getQuotes, exportQuotes, deleteQuote, ApiError, type Quote, type FreezeDryerDetails } from '@/lib/api';
 import ConfirmDialog from '@/components/ConfirmDialog';
+import { TableContainer, Table, Thead, Th, Tr, Td } from '@/components/ui/Table';
+import { buttonClasses } from '@/components/ui/Button';
+import EmptyState from '@/components/ui/EmptyState';
+import { SkeletonBlock } from '@/components/ui/Skeleton';
 
 const FREEZE_DRYER_LIST_FIELDS: (keyof Omit<FreezeDryerDetails, 'comments'>)[] = [
   'organizationSegment',
@@ -175,44 +179,40 @@ export default function Submissions() {
   }
 
   return (
-    <div className="max-w-6xl p-8 text-left bg-white text-black rounded-lg">
-      <Link href="/dashboard" className="inline-block mb-4 text-inherit no-underline">
+    <div className="max-w-7xl mx-auto w-full p-4 sm:p-8 text-left">
+      <Link href="/dashboard" className="inline-flex items-center gap-1 mb-4 text-sm text-gray-500 no-underline hover:text-gray-900 transition-colors">
         &larr; Back to dashboard
       </Link>
-      <h1 className="text-4xl font-bold text-black!">Submissions</h1>
+      <h1 className="text-3xl sm:text-4xl font-bold text-gray-900! mb-6">Submissions</h1>
 
       {status === 'ready' && quotes.length > 0 && (
-        <div className="flex flex-wrap items-end gap-3 mt-4">
-          <label className="flex flex-col gap-1 text-sm text-black/80">
+        <div className="flex flex-wrap items-end gap-3 mb-6">
+          <label className="flex flex-col gap-1 text-sm text-gray-600">
             From
             <input
               type="date"
               value={fromDate}
               onChange={(e) => setFromDate(e.target.value)}
-              className="px-3 py-2.5 rounded-md border border-black/15 bg-transparent text-black focus:outline-none focus:border-[#f29a4e]"
+              className="px-3 py-2.5 rounded-lg border border-gray-300 bg-white text-gray-900 focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent/20 transition-colors"
             />
           </label>
-          <label className="flex flex-col gap-1 text-sm text-black/80">
+          <label className="flex flex-col gap-1 text-sm text-gray-600">
             To
             <input
               type="date"
               value={toDate}
               onChange={(e) => setToDate(e.target.value)}
-              className="px-3 py-2.5 rounded-md border border-black/15 bg-transparent text-black focus:outline-none focus:border-[#f29a4e]"
+              className="px-3 py-2.5 rounded-lg border border-gray-300 bg-white text-gray-900 focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent/20 transition-colors"
             />
           </label>
           {hasActiveFilters && (
-            <button
-              type="button"
-              onClick={clearFilters}
-              className="px-[0.9rem] py-[0.55rem] rounded-md border border-black/15 bg-transparent text-black cursor-pointer transition-all hover:bg-black/10"
-            >
+            <button type="button" onClick={clearFilters} className={buttonClasses({ variant: 'ghost' })}>
               Clear filters
             </button>
           )}
           <button
             type="button"
-            className="px-6 py-2.5 bg-[#f29a4e] text-black rounded-md cursor-pointer no-underline text-base transition-all hover:bg-[#dc8639] hover:-translate-y-0.5 hover:shadow-[0_6px_14px_rgba(242,154,78,0.35)] active:translate-y-0 active:shadow-none disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:translate-y-0 disabled:hover:shadow-none"
+            className={buttonClasses()}
             onClick={handleExport}
             disabled={exporting || filteredQuotes.length === 0}
           >
@@ -221,7 +221,7 @@ export default function Submissions() {
           {selectedVisibleIds.length > 0 && (
             <button
               type="button"
-              className="px-6 py-2.5 bg-transparent border border-[#ff6b6b] text-[#ff6b6b] rounded-md cursor-pointer text-base transition-all hover:bg-[#ff6b6b] hover:text-black hover:-translate-y-0.5 active:translate-y-0 disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:translate-y-0"
+              className={buttonClasses({ variant: 'danger' })}
               onClick={() => setPendingBulkDelete(true)}
               disabled={bulkDeleting}
             >
@@ -231,26 +231,32 @@ export default function Submissions() {
         </div>
       )}
 
-      {status === 'loading' && <p className="text-black/80">Loading submissions...</p>}
-      {status === 'error' && <p className="text-black/80">Could not load submissions.</p>}
-      {status === 'ready' && quotes.length === 0 && <p className="text-black/80">No submissions yet.</p>}
+      {status === 'loading' && (
+        <div className="flex flex-col gap-2">
+          {Array.from({ length: 5 }).map((_, i) => (
+            <SkeletonBlock className="h-10 w-full" key={i} />
+          ))}
+        </div>
+      )}
+      {status === 'error' && <EmptyState title="Could not load submissions" description="Please try again shortly." />}
+      {status === 'ready' && quotes.length === 0 && <EmptyState title="No submissions yet" />}
       {status === 'ready' && quotes.length > 0 && filteredQuotes.length === 0 && (
-        <p className="text-black/80 mt-6">No submissions match your filters.</p>
+        <EmptyState title="No submissions match your filters" />
       )}
 
       {filteredQuotes.length > 0 && (
-        <div className="overflow-x-auto mt-6">
-          <table className="w-full border-collapse whitespace-nowrap">
-            <thead>
+        <TableContainer className="max-h-[70vh]">
+          <Table className="whitespace-nowrap">
+            <Thead>
               <tr>
-                <th className="px-3.5 py-2.5 border border-black/15 text-left text-sm font-semibold bg-[#f29a4e]/10">
+                <Th className="w-10">
                   <input
                     type="checkbox"
                     aria-label="Select all submissions"
                     checked={allVisibleSelected}
                     onChange={toggleSelectAll}
                   />
-                </th>
+                </Th>
                 {[
                   'Date',
                   'Product',
@@ -268,47 +274,41 @@ export default function Submissions() {
                   'Freeze Dryer Requirements',
                   'Actions',
                 ].map((h) => (
-                  <th key={h} className="px-3.5 py-2.5 border border-black/15 text-left text-sm font-semibold bg-[#f29a4e]/10">
-                    {h}
-                  </th>
+                  <Th key={h}>{h}</Th>
                 ))}
               </tr>
-            </thead>
+            </Thead>
             <tbody>
               {filteredQuotes.map((quote) => (
-                <tr key={quote._id}>
-                  <td className="px-3.5 py-2.5 border border-black/15 text-sm">
+                <Tr key={quote._id}>
+                  <Td>
                     <input
                       type="checkbox"
                       aria-label={`Select submission from ${[quote.firstName, quote.lastName].filter(Boolean).join(' ')}`}
                       checked={selectedIds.has(quote._id)}
                       onChange={() => toggleSelect(quote._id)}
                     />
-                  </td>
-                  <td className="px-3.5 py-2.5 border border-black/15 text-sm">{new Date(quote.createdAt).toLocaleString()}</td>
-                  <td className="px-3.5 py-2.5 border border-black/15 text-sm">{quote.productName}</td>
-                  <td className="px-3.5 py-2.5 border border-black/15 text-sm">
-                    {(quote.selections || []).map((s) => `${s.group}: ${s.option}`).join(', ')}
-                  </td>
-                  <td className="px-3.5 py-2.5 border border-black/15 text-sm">{quote.firstName}</td>
-                  <td className="px-3.5 py-2.5 border border-black/15 text-sm">{quote.lastName}</td>
-                  <td className="px-3.5 py-2.5 border border-black/15 text-sm">{quote.email}</td>
-                  <td className="px-3.5 py-2.5 border border-black/15 text-sm">{quote.phone}</td>
-                  <td className="px-3.5 py-2.5 border border-black/15 text-sm">{quote.streetAddress}</td>
-                  <td className="px-3.5 py-2.5 border border-black/15 text-sm">{quote.city}</td>
-                  <td className="px-3.5 py-2.5 border border-black/15 text-sm">{quote.state}</td>
-                  <td className="px-3.5 py-2.5 border border-black/15 text-sm">{quote.pincode}</td>
-                  <td className="px-3.5 py-2.5 border border-black/15 text-sm">{quote.companyName}</td>
-                  <td className="px-3.5 py-2.5 border border-black/15 text-sm">{quote.role}</td>
-                  <td className="px-3.5 py-2.5 border border-black/15 text-sm whitespace-normal min-w-[220px]">
-                    {formatFreezeDryerDetails(quote.freezeDryerDetails)}
-                  </td>
-                  <td className="px-3.5 py-2.5 border border-black/15 text-sm">
+                  </Td>
+                  <Td>{new Date(quote.createdAt).toLocaleString()}</Td>
+                  <Td>{quote.productName}</Td>
+                  <Td>{(quote.selections || []).map((s) => `${s.group}: ${s.option}`).join(', ')}</Td>
+                  <Td>{quote.firstName}</Td>
+                  <Td>{quote.lastName}</Td>
+                  <Td>{quote.email}</Td>
+                  <Td>{quote.phone}</Td>
+                  <Td>{quote.streetAddress}</Td>
+                  <Td>{quote.city}</Td>
+                  <Td>{quote.state}</Td>
+                  <Td>{quote.pincode}</Td>
+                  <Td>{quote.companyName}</Td>
+                  <Td>{quote.role}</Td>
+                  <Td className="whitespace-normal min-w-[220px]">{formatFreezeDryerDetails(quote.freezeDryerDetails)}</Td>
+                  <Td>
                     <button
                       type="button"
                       aria-label="Delete submission"
                       title="Delete submission"
-                      className="inline-flex items-center justify-center w-8 h-8 rounded-md border border-[#ff6b6b] bg-transparent text-[#ff6b6b] cursor-pointer transition-all hover:bg-[#ff6b6b] hover:text-black hover:-translate-y-0.5 active:translate-y-0 disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:translate-y-0"
+                      className="inline-flex items-center justify-center w-8 h-8 rounded-lg border border-danger/30 bg-white text-danger cursor-pointer transition-all hover:bg-danger-subtle hover:border-danger disabled:opacity-60 disabled:cursor-not-allowed"
                       onClick={() => setPendingDelete(quote)}
                       disabled={deletingId === quote._id}
                     >
@@ -326,12 +326,12 @@ export default function Submissions() {
                         </svg>
                       )}
                     </button>
-                  </td>
-                </tr>
+                  </Td>
+                </Tr>
               ))}
             </tbody>
-          </table>
-        </div>
+          </Table>
+        </TableContainer>
       )}
 
       <ConfirmDialog
