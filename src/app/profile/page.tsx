@@ -41,8 +41,8 @@ export default function MyProfile() {
   }
 
   return (
-    <div className="max-w-2xl mx-auto w-full p-4 sm:p-8 text-left">
-      <h1 className="text-3xl sm:text-4xl font-bold text-gray-900! mb-6">My Profile</h1>
+    <div className="max-w-4xl w-full p-4 sm:p-8 text-left">
+      <h1 className="text-2xl sm:text-3xl font-bold text-gray-900! mb-6">My Profile</h1>
 
       {status === 'loading' && (
         <Card className="p-6 sm:p-8 flex flex-col gap-4">

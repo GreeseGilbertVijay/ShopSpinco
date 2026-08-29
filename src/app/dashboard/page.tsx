@@ -37,7 +37,7 @@ const actions = [
 export default function Dashboard() {
   return (
     <div className="max-w-6xl mx-auto w-full p-4 sm:p-8 text-left">
-      <h1 className="text-3xl sm:text-4xl font-bold text-gray-900! mb-1">Dashboard</h1>
+      <h1 className="text-2xl sm:text-3xl font-bold text-gray-900! mb-1">Dashboard</h1>
       <p className="text-gray-500 mb-8">Manage products, quote submissions and users.</p>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">

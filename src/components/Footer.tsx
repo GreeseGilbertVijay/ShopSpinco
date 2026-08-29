@@ -52,7 +52,7 @@ export default function Footer() {
       </div>
 
       <div className="border-t border-gray-100 px-4 sm:px-8 py-5 text-center text-xs text-gray-400">
-        © 2026 Spincotech. All rights reserved.
+        © 2015 – {new Date().getFullYear()} Spincotech. All rights reserved.
       </div>
     </footer>
   );
