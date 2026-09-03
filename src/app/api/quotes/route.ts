@@ -110,9 +110,19 @@ export async function POST(req: NextRequest) {
     }
     const customerAttachments = brochureAttachment ? [...attachments, brochureAttachment] : attachments;
 
+    // Freeze Dryer requests also go to the process technology team, who handle those SKUs.
+    const freezeDryerRecipients = [
+      'agalya.t@spincotech.com',
+      'anne.omeha@spincotech.com',
+      'mohan@spincotech.com',
+    ];
+    const adminRecipients = [process.env.ADMIN_EMAIL, ...(freezeDryerText ? freezeDryerRecipients : [])]
+      .filter(Boolean)
+      .join(',');
+
     await Promise.all([
       sendMail({
-        to: process.env.ADMIN_EMAIL,
+        to: adminRecipients,
         subject: `New quote request: ${product.name}`,
         text: `New quote request from ${fullName} (${[email, phone, companyName].filter(Boolean).join(', ')}) for ${product.name}.\n\nSelections:\n${resolvedSelections.map((s) => `${s.group}: ${s.option}`).join('\n')}${freezeDryerText ? `\n\nFreeze Dryer Requirements:\n${freezeDryerText}` : ''}`,
         attachments,
