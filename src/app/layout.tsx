@@ -2,8 +2,7 @@ import type { Metadata } from 'next';
 import './globals.css';
 import { AuthProvider } from '@/components/AuthProvider';
 import { CheckoutSelectionProvider } from '@/components/CheckoutSelectionProvider';
-import Navbar from '@/components/Navbar';
-import Footer from '@/components/Footer';
+import SiteChrome from '@/components/SiteChrome';
 
 export const metadata: Metadata = {
   title: 'ShopSpinco',
@@ -18,9 +17,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <AuthProvider>
           <CheckoutSelectionProvider>
             <div className="app-shell">
-              <Navbar />
-              <main className="flex-1 flex flex-col pt-[74px]">{children}</main>
-              <Footer />
+              <SiteChrome>{children}</SiteChrome>
             </div>
           </CheckoutSelectionProvider>
         </AuthProvider>
