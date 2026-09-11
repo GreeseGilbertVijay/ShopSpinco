@@ -3,7 +3,7 @@ import Link from 'next/link';
 import ProcessTechnologyNavbar from '@/components/ProcessTechnologyNavbar';
 import RotatingCircle from '@/components/RotatingCircle';
 import Avatar from '@/components/Avatar';
-import StackedServiceCards from '@/components/StackedServiceCards';
+
 
 export const metadata: Metadata = {
   title: 'Process & Technology · ShopSpinco',
@@ -126,6 +126,9 @@ function Stars() {
     </div>
   );
 }
+
+const SERVICE_CARD_HEIGHT = 520;
+const SERVICE_STEP = 30;
 
 const services = [
   {
@@ -305,7 +308,52 @@ export default function ProcessTechnologyPage() {
           <p className="uppercase tracking-[0.3em] text-xs text-gray-500 mb-3">What we ship</p>
           <h2 className="text-4xl sm:text-5xl font-bold text-gray-900! m-0 mb-14">Our ways to move fast</h2>
 
-          <StackedServiceCards services={services} />
+          <div className="relative" style={{ height: SERVICE_CARD_HEIGHT + (services.length - 1) * SERVICE_STEP }}>
+            {services.map((service, i) => (
+              <div
+                key={service.number}
+                className={`absolute inset-x-0 rounded-3xl p-8 sm:p-12 text-white shadow-lifted flex flex-col ${service.bg}`}
+                style={{ top: i * SERVICE_STEP, zIndex: services.length - i, minHeight: SERVICE_CARD_HEIGHT }}
+              >
+                <div className="flex items-start justify-between gap-6 mb-6">
+                  <h3 className="text-2xl sm:text-3xl font-bold max-w-xl m-0">{service.title}</h3>
+                  <span className="text-sm text-white/50 shrink-0">({service.number})</span>
+                </div>
+                <p className="max-w-2xl text-white/80 leading-relaxed mb-10">{service.description}</p>
+
+                <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-8 mt-auto">
+                  <div className="max-w-sm">
+                    <blockquote className="m-0 text-sm text-white/90 leading-relaxed mb-4">
+                      &ldquo;{service.quote}&rdquo;
+                    </blockquote>
+                    <div className="flex items-center gap-3">
+                      <Avatar name={service.author} className="w-8 h-8 text-xs" />
+                      <div className="text-xs text-white/70">
+                        <div className="font-semibold text-white">{service.author}</div>
+                        <div>{service.role}</div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex items-end">
+                    {service.tiles.map((tileLabel, tileIndex) => (
+                      <div
+                        key={tileLabel}
+                        className="w-20 h-20 sm:w-24 sm:h-24 rounded-xl bg-white/10 border border-white/15 flex items-end p-2 shadow-lifted"
+                        style={{
+                          marginLeft: tileIndex === 0 ? 0 : -28,
+                          transform: `translateY(-${tileIndex * 14}px)`,
+                          zIndex: tileIndex + 1,
+                        }}
+                      >
+                        <span className="text-[10px] font-medium text-white/70 leading-tight">{tileLabel}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       </section>
 
