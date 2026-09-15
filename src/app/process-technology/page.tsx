@@ -3,6 +3,7 @@ import Link from 'next/link';
 import ProcessTechnologyNavbar from '@/components/ProcessTechnologyNavbar';
 import RotatingCircle from '@/components/RotatingCircle';
 import Avatar from '@/components/Avatar';
+import StackedServiceCards from '@/components/StackedServiceCards';
 
 
 export const metadata: Metadata = {
@@ -73,33 +74,32 @@ const workTiles: WorkTile[] = [
   { label: 'Packaging Cell', sub: 'Line Design', gradient: 'from-amber-600 to-amber-800', icon: <BoxIcon /> },
   { label: 'Lab QC', sub: 'Quality', gradient: 'from-sky-500 to-sky-700', icon: <LeafIcon /> },
   { label: 'Cold Storage', sub: 'Warehousing', gradient: 'from-violet-500 to-violet-700', icon: <BoxIcon /> },
-  { label: 'Moisture Sensor', sub: 'Instrumentation', gradient: 'from-teal-500 to-teal-700', icon: <GaugeIcon /> },
-  { label: 'Conveyor System', sub: 'Material Handling', gradient: 'from-fuchsia-500 to-fuchsia-700', icon: <SnowflakeIcon /> },
-  { label: 'Utility Skid', sub: 'Facilities', gradient: 'from-slate-500 to-slate-700', icon: <FlaskIcon /> },
+ 
 ];
 
-const CARD_SIZE = 144;
-const CARD_GAP = 8;
+const CARD_SIZE = 200;
+const CARD_GAP = 72;
 // radius that keeps adjacent card edges CARD_GAP apart along the ring
 const CIRCLE_RADIUS = Math.round((CARD_SIZE + CARD_GAP) / (2 * Math.sin(Math.PI / workTiles.length)));
-// how far a card leans away from upright as it moves from the vertical axis toward the sides
-const LEAN_MAX_DEG = 12;
 
 function getCirclePosition(index: number, total: number) {
-  const angle = (360 / total) * index - 90;
+  const angle = (360 / total) * index - 120;
   const radians = (angle * Math.PI) / 180;
-  return { x: Math.round(Math.cos(radians) * CIRCLE_RADIUS), y: Math.round(Math.sin(radians) * CIRCLE_RADIUS) };
+  return { angle, x: Math.round(Math.cos(radians) * CIRCLE_RADIUS), y: Math.round(Math.sin(radians) * CIRCLE_RADIUS) };
 }
 
 function WorkTileCard({ tile, index }: { tile: WorkTile; index: number }) {
-  const { x, y } = getCirclePosition(index, workTiles.length);
-  // cards lean outward based on their horizontal offset from the shared center,
-  // so every card's tilt stays anchored to the center instead of a random angle
-  const rotation = Math.round((x / CIRCLE_RADIUS) * LEAN_MAX_DEG);
+  const { x, y, angle } = getCirclePosition(index, workTiles.length);
+  // tilt each card so its bottom edge (where the label sits) faces the shared
+  // center, as if gravity were pulling it toward the "Our Work" hub — flipped
+  // 180deg on the lower half of the ring so labels never render upside-down
+  let rotation = Math.round(angle + 90);
+  const normalized = ((rotation % 360) + 360) % 360;
+  if (normalized > 90 && normalized < 270) rotation += 180;
 
   return (
     <div
-      className={`hidden lg:flex absolute top-1/2 left-1/2 flex-col items-center justify-center text-center gap-2 rounded-2xl p-4 bg-gradient-to-br ${tile.gradient} text-white shadow-lifted`}
+      className={`hidden lg:flex absolute top-1/2 left-1/2 flex-col items-center justify-end text-center gap-2 rounded-2xl p-4 bg-gradient-to-br ${tile.gradient} text-white shadow-lifted cursor-pointer`}
       style={{
         width: CARD_SIZE,
         height: CARD_SIZE,
@@ -126,9 +126,6 @@ function Stars() {
     </div>
   );
 }
-
-const SERVICE_CARD_HEIGHT = 520;
-const SERVICE_STEP = 30;
 
 const services = [
   {
@@ -266,12 +263,14 @@ export default function ProcessTechnologyPage() {
       {/* See more work — circle section */}
       <section id="work" className="relative overflow-hidden py-24 sm:py-32 px-6 text-white bg-[#0b0b0c] scroll-mt-24">
         <div className="max-w-7xl mx-auto">
-          <div className="relative min-h-[420px] sm:min-h-[520px] flex items-center justify-center">
-            <RotatingCircle className="absolute inset-0">
-              {workTiles.map((tile, i) => (
-                <WorkTileCard key={tile.label} tile={tile} index={i} />
-              ))}
-            </RotatingCircle>
+          <div className="group relative min-h-[420px] sm:min-h-[520px] flex items-center justify-center">
+            <div className="absolute inset-0 origin-center scale-[0.8] transition-transform duration-500 ease-out group-hover:scale-[0.65]">
+              <RotatingCircle className="absolute inset-0">
+                {workTiles.map((tile, i) => (
+                  <WorkTileCard key={tile.label} tile={tile} index={i} />
+                ))}
+              </RotatingCircle>
+            </div>
 
             <div className="relative z-10 text-center px-4">
               <p className="uppercase tracking-[0.3em] text-xs text-white/40 mb-4">Our Work</p>
@@ -292,7 +291,7 @@ export default function ProcessTechnologyPage() {
             {workTiles.map((tile) => (
               <div
                 key={tile.label}
-                className={`flex flex-col justify-between rounded-xl p-3 h-24 bg-gradient-to-br ${tile.gradient} text-white`}
+                className={`flex flex-col justify-between rounded-xl p-3 h-24 bg-gradient-to-br ${tile.gradient} text-white cursor-pointer`}
               >
                 <span className="opacity-90 scale-75 origin-top-left">{tile.icon}</span>
                 <p className="text-[10px] font-semibold leading-tight">{tile.label}</p>
@@ -308,52 +307,7 @@ export default function ProcessTechnologyPage() {
           <p className="uppercase tracking-[0.3em] text-xs text-gray-500 mb-3">What we ship</p>
           <h2 className="text-4xl sm:text-5xl font-bold text-gray-900! m-0 mb-14">Our ways to move fast</h2>
 
-          <div className="relative" style={{ height: SERVICE_CARD_HEIGHT + (services.length - 1) * SERVICE_STEP }}>
-            {services.map((service, i) => (
-              <div
-                key={service.number}
-                className={`absolute inset-x-0 rounded-3xl p-8 sm:p-12 text-white shadow-lifted flex flex-col ${service.bg}`}
-                style={{ top: i * SERVICE_STEP, zIndex: services.length - i, minHeight: SERVICE_CARD_HEIGHT }}
-              >
-                <div className="flex items-start justify-between gap-6 mb-6">
-                  <h3 className="text-2xl sm:text-3xl font-bold max-w-xl m-0">{service.title}</h3>
-                  <span className="text-sm text-white/50 shrink-0">({service.number})</span>
-                </div>
-                <p className="max-w-2xl text-white/80 leading-relaxed mb-10">{service.description}</p>
-
-                <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-8 mt-auto">
-                  <div className="max-w-sm">
-                    <blockquote className="m-0 text-sm text-white/90 leading-relaxed mb-4">
-                      &ldquo;{service.quote}&rdquo;
-                    </blockquote>
-                    <div className="flex items-center gap-3">
-                      <Avatar name={service.author} className="w-8 h-8 text-xs" />
-                      <div className="text-xs text-white/70">
-                        <div className="font-semibold text-white">{service.author}</div>
-                        <div>{service.role}</div>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="flex items-end">
-                    {service.tiles.map((tileLabel, tileIndex) => (
-                      <div
-                        key={tileLabel}
-                        className="w-20 h-20 sm:w-24 sm:h-24 rounded-xl bg-white/10 border border-white/15 flex items-end p-2 shadow-lifted"
-                        style={{
-                          marginLeft: tileIndex === 0 ? 0 : -28,
-                          transform: `translateY(-${tileIndex * 14}px)`,
-                          zIndex: tileIndex + 1,
-                        }}
-                      >
-                        <span className="text-[10px] font-medium text-white/70 leading-tight">{tileLabel}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
+          <StackedServiceCards services={services} />
         </div>
       </section>
 
