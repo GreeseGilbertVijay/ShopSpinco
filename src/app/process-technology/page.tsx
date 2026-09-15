@@ -4,6 +4,7 @@ import ProcessTechnologyNavbar from '@/components/ProcessTechnologyNavbar';
 import RotatingCircle from '@/components/RotatingCircle';
 import Avatar from '@/components/Avatar';
 import StackedServiceCards from '@/components/StackedServiceCards';
+import TrustedByFan from '@/components/TrustedByFan';
 
 
 export const metadata: Metadata = {
@@ -181,7 +182,9 @@ const testimonials = [
     author: 'Maya Chen',
     role: 'Founder @Thistle & Bloom',
     dark: false,
-    pos: 'left-[0%] top-2 rotate-[-9deg] z-[1]',
+    leftPercent: 0,
+    topPx: 8,
+    rotateDeg: -9,
   },
   {
     quote:
@@ -189,7 +192,9 @@ const testimonials = [
     author: 'Owen Reyes',
     role: 'Co-Founder @Alpine Provisions',
     dark: true,
-    pos: 'left-[14%] top-6 rotate-[-4deg] z-[2]',
+    leftPercent: 14,
+    topPx: 24,
+    rotateDeg: -4,
   },
   {
     quote:
@@ -197,7 +202,9 @@ const testimonials = [
     author: 'Priya Nandi',
     role: 'Ops Lead @Harvest Collective',
     dark: false,
-    pos: 'left-[30%] top-0 rotate-[0deg] z-[3]',
+    leftPercent: 30,
+    topPx: 0,
+    rotateDeg: 0,
   },
   {
     quote:
@@ -205,7 +212,9 @@ const testimonials = [
     author: 'Marcus Webb',
     role: 'Founder @Coastal Cure Co.',
     dark: true,
-    pos: 'left-[46%] top-5 rotate-[4deg] z-[4]',
+    leftPercent: 46,
+    topPx: 20,
+    rotateDeg: 4,
   },
   {
     quote:
@@ -213,7 +222,9 @@ const testimonials = [
     author: 'Elena Sato',
     role: 'CEO @Root & Ready Foods',
     dark: false,
-    pos: 'left-[60%] top-1 rotate-[9deg] z-[5]',
+    leftPercent: 60,
+    topPx: 4,
+    rotateDeg: 9,
   },
 ];
 
@@ -302,7 +313,7 @@ export default function ProcessTechnologyPage() {
       </section>
 
       {/* Below section — what we ship */}
-      <section id="services" className="bg-[#f5f1e8] py-20 sm:py-28 px-6 scroll-mt-24">
+      <section id="services" className="bg-[#f5f1e8] pt-8 sm:pt-28 px-4 scroll-mt-24">
         <div className="max-w-6xl mx-auto text-left">
           <p className="uppercase tracking-[0.3em] text-xs text-gray-500 mb-3">What we ship</p>
           <h2 className="text-4xl sm:text-5xl font-bold text-gray-900! m-0 mb-14">Our ways to move fast</h2>
@@ -312,73 +323,44 @@ export default function ProcessTechnologyPage() {
       </section>
 
       {/* Trusted by +40 founders */}
-      <section id="trusted" className="bg-[#f5f1e8] pt-4 pb-24 sm:pb-32 px-6 overflow-hidden scroll-mt-24">
+      <section id="trusted" className="bg-[#f5f1e8] pb-24 sm:pb-32 px-6 overflow-hidden scroll-mt-2">
         <div className="max-w-6xl mx-auto">
-          <h2 className="text-5xl sm:text-6xl font-bold leading-[0.95] m-0 mb-16">
-            <span className="text-gray-900!">Trusted by</span>
-            <br />
-            <span className="text-gray-400!">+40 founders</span>
-          </h2>
+          <div className="mb-24">
+            <h2 className="text-5xl sm:text-6xl font-bold leading-[0.95] m-0">
+              <span className="text-gray-900!">Trusted by</span>
+              <br />
+              <span className="text-gray-400!">+40 founders</span>
+            </h2>
+          </div>
 
           {/* desktop fan */}
-          <div className="hidden sm:block relative h-[420px]">
-            {testimonials.map((t) => (
-              <div
-                key={t.author}
-                className={`absolute w-[280px] rounded-2xl p-6 shadow-lifted ${t.pos} ${
-                  t.dark ? 'bg-neutral-800 text-white' : 'bg-white text-gray-900'
-                }`}
-              >
-                <div className="flex items-center justify-between mb-4">
-                  <Stars />
-                  <span
-                    className={`text-[10px] font-semibold uppercase tracking-wide ${
-                      t.dark ? 'text-white/60' : 'text-gray-500'
-                    }`}
-                  >
-                    Contact Sales
-                  </span>
-                </div>
-                <p className={`text-sm leading-relaxed mb-6 line-clamp-6 ${t.dark ? 'text-white/85' : 'text-gray-700'}`}>
-                  &ldquo;{t.quote}&rdquo;
-                </p>
-                <div className="flex items-center gap-3">
-                  <Avatar
-                    name={t.author}
-                    className={`w-9 h-9 text-xs ${t.dark ? 'bg-white/10! text-white!' : ''}`}
-                  />
-                  <div className="text-xs">
-                    <div className="font-semibold">{t.author}</div>
-                    <div className={t.dark ? 'text-white/60' : 'text-gray-500'}>{t.role}</div>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
+          <TrustedByFan testimonials={testimonials} />
 
           {/* mobile scroll list */}
           <div className="sm:hidden flex gap-4 overflow-x-auto pb-2 -mx-6 px-6 snap-x snap-mandatory">
             {testimonials.map((t) => (
-              <div
-                key={t.author}
-                className={`snap-start shrink-0 w-[80vw] rounded-2xl p-6 shadow-lifted ${
-                  t.dark ? 'bg-neutral-800 text-white' : 'bg-white text-gray-900'
-                }`}
-              >
-                <div className="flex items-center justify-between mb-4">
-                  <Stars />
-                  <span className={`text-[10px] font-semibold uppercase tracking-wide ${t.dark ? 'text-white/60' : 'text-gray-500'}`}>
-                    Contact Sales
-                  </span>
-                </div>
-                <p className={`text-sm leading-relaxed mb-6 ${t.dark ? 'text-white/85' : 'text-gray-700'}`}>
-                  &ldquo;{t.quote}&rdquo;
-                </p>
-                <div className="flex items-center gap-3">
-                  <Avatar name={t.author} className={`w-9 h-9 text-xs ${t.dark ? 'bg-white/10! text-white!' : ''}`} />
-                  <div className="text-xs">
-                    <div className="font-semibold">{t.author}</div>
-                    <div className={t.dark ? 'text-white/60' : 'text-gray-500'}>{t.role}</div>
+              <div key={t.author} className="trusted-card relative snap-start shrink-0 w-[80vw]">
+                <div
+                  className={`trusted-card-box absolute inset-0 rounded-2xl shadow-lifted ${
+                    t.dark ? 'bg-neutral-800' : 'bg-white'
+                  }`}
+                />
+                <div className={`relative p-6 ${t.dark ? 'text-white' : 'text-gray-900'}`}>
+                  <div className="flex items-center justify-between mb-4">
+                    <Stars />
+                    <span className={`text-[10px] font-semibold uppercase tracking-wide ${t.dark ? 'text-white/60' : 'text-gray-500'}`}>
+                      Contact Sales
+                    </span>
+                  </div>
+                  <p className={`text-sm leading-relaxed mb-6 ${t.dark ? 'text-white/85' : 'text-gray-700'}`}>
+                    &ldquo;{t.quote}&rdquo;
+                  </p>
+                  <div className="flex items-center gap-3">
+                    <Avatar name={t.author} className={`w-9 h-9 text-xs ${t.dark ? 'bg-white/10! text-white!' : ''}`} />
+                    <div className="text-xs">
+                      <div className="font-semibold">{t.author}</div>
+                      <div className={t.dark ? 'text-white/60' : 'text-gray-500'}>{t.role}</div>
+                    </div>
                   </div>
                 </div>
               </div>
