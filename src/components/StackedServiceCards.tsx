@@ -29,6 +29,10 @@ const EXIT_ROTATION = -42;
 // Scroll distance per card, as a fraction of viewport height. Lower this to
 // shorten the pinned section so it releases into the next section sooner.
 const SCROLL_HEIGHT_PER_CARD = 0.6;
+// How far through the last card's exit animation the user must scroll before
+// the section unpins into what follows — 1 requires a full exit, 0.5 releases
+// at the halfway point so the next section starts coming in sooner.
+const LAST_CARD_RELEASE_FRACTION = 0.05;
 
 // Ported from scroll-card-deck: scroll progress is split into one segment per
 // card. Each card is either past (exited), present (mid-exit, interpolated by
@@ -44,6 +48,10 @@ export default function StackedServiceCards({ services }: { services: Service[] 
     if (!section || cards.length === 0) return;
 
     const segmentSize = 1 / n;
+    // Physical scroll is sized for (n - 1) full card segments plus a partial
+    // last segment, so pixels-per-card stay unchanged for every card except
+    // the last, which only needs to reach LAST_CARD_RELEASE_FRACTION.
+    const totalSegments = n - 1 + LAST_CARD_RELEASE_FRACTION;
 
     cards.forEach((card, index) => {
       gsap.set(card, {
@@ -58,12 +66,12 @@ export default function StackedServiceCards({ services }: { services: Service[] 
     const trigger = ScrollTrigger.create({
       trigger: section,
       start: 'top top',
-      end: () => `+=${window.innerHeight * n * SCROLL_HEIGHT_PER_CARD}`,
+      end: () => `+=${window.innerHeight * totalSegments * SCROLL_HEIGHT_PER_CARD}`,
       pin: true,
       pinSpacing: true,
       scrub: true,
       onUpdate: (self) => {
-        const progress = self.progress;
+        const progress = Math.min(self.progress * (totalSegments / n), 1);
         const activeIndex = Math.min(Math.floor(progress / segmentSize), n - 1);
         const segmentProgress = Math.min(
           (progress - activeIndex * segmentSize) / segmentSize,

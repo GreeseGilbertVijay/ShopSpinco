@@ -316,7 +316,8 @@ export default function ProcessTechnologyPage() {
       <section id="services" className="bg-[#f5f1e8] pt-8 sm:pt-28 px-4 scroll-mt-24">
         <div className="max-w-6xl mx-auto text-left">
           <p className="uppercase tracking-[0.3em] text-xs text-gray-500 mb-3">What we ship</p>
-          <h2 className="text-4xl sm:text-5xl font-bold text-gray-900! m-0 mb-2">Our ways to move fast</h2>
+          <h2 className="text-4xl sm:text-5xl font-bold text-gray-900! m-0 mb-14">Our ways to move fast</h2>
+
           <StackedServiceCards services={services} />
         </div>
       </section>
