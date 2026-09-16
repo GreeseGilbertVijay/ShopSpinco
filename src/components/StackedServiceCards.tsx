@@ -26,6 +26,9 @@ const SCALE_STEP = 0.045;
 // How far and how sharply the active card tilts away as it exits.
 const EXIT_LIFT_RATIO = 0.9;
 const EXIT_ROTATION = -42;
+// Scroll distance per card, as a fraction of viewport height. Lower this to
+// shorten the pinned section so it releases into the next section sooner.
+const SCROLL_HEIGHT_PER_CARD = 0.6;
 
 // Ported from scroll-card-deck: scroll progress is split into one segment per
 // card. Each card is either past (exited), present (mid-exit, interpolated by
@@ -55,7 +58,7 @@ export default function StackedServiceCards({ services }: { services: Service[] 
     const trigger = ScrollTrigger.create({
       trigger: section,
       start: 'top top',
-      end: () => `+=${window.innerHeight * n}`,
+      end: () => `+=${window.innerHeight * n * SCROLL_HEIGHT_PER_CARD}`,
       pin: true,
       pinSpacing: true,
       scrub: true,
