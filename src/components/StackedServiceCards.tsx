@@ -3,7 +3,6 @@
 import { useEffect, useRef } from 'react';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import Avatar from './Avatar';
 
 if (typeof window !== 'undefined') {
   gsap.registerPlugin(ScrollTrigger);
@@ -14,9 +13,6 @@ export type Service = {
   bg: string;
   title: string;
   description: string;
-  quote: string;
-  author: string;
-  role: string;
   tiles: string[];
 };
 
@@ -121,7 +117,7 @@ export default function StackedServiceCards({ services }: { services: Service[] 
           ref={(el) => {
             cardRefs.current[i] = el;
           }}
-          className="absolute top-1/2 left-1/2 w-[min(90vw,900px)]"
+          className="absolute top-[42%] left-1/2 w-[min(90vw,900px)]"
           style={{ willChange: 'transform', transformOrigin: 'bottom center', zIndex: n - i }}
         >
           <div
@@ -134,20 +130,7 @@ export default function StackedServiceCards({ services }: { services: Service[] 
             </div>
             <p className="max-w-2xl text-white/80 leading-relaxed mb-10">{service.description}</p>
 
-            <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-8 mt-auto">
-              <div className="max-w-sm">
-                <blockquote className="m-0 text-sm text-white/90 leading-relaxed mb-4">
-                  &ldquo;{service.quote}&rdquo;
-                </blockquote>
-                <div className="flex items-center gap-3">
-                  <Avatar name={service.author} className="w-8 h-8 text-xs" />
-                  <div className="text-xs text-white/70">
-                    <div className="font-semibold text-white">{service.author}</div>
-                    <div>{service.role}</div>
-                  </div>
-                </div>
-              </div>
-
+            <div className="flex justify-end mt-auto">
               <div className="flex items-end">
                 {service.tiles.map((tileLabel, tileIndex) => (
                   <div

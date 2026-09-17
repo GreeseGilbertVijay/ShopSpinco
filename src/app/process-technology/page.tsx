@@ -92,11 +92,13 @@ function getCirclePosition(index: number, total: number) {
 function WorkTileCard({ tile, index }: { tile: WorkTile; index: number }) {
   const { x, y, angle } = getCirclePosition(index, workTiles.length);
   // tilt each card so its bottom edge (where the label sits) faces the shared
-  // center, as if gravity were pulling it toward the "Our Work" hub — flipped
-  // 180deg on the lower half of the ring so labels never render upside-down
-  let rotation = Math.round(angle + 90);
+  // center, as if gravity were pulling it toward the "Our Work" hub
+  const rotation = Math.round(angle + 90);
   const normalized = ((rotation % 360) + 360) % 360;
-  if (normalized > 90 && normalized < 270) rotation += 180;
+  // on the lower half of the ring that tilt leaves labels upside-down, so
+  // flip just the content in place (not the whole card) to keep it readable
+  // while staying anchored to the same bottom edge as every other card
+  const flipContent = normalized > 90 && normalized < 270;
 
   return (
     <div
@@ -107,10 +109,15 @@ function WorkTileCard({ tile, index }: { tile: WorkTile; index: number }) {
         transform: `translate(-50%, -50%) translate(${x}px, ${y}px) rotate(${rotation}deg)`,
       }}
     >
-      <span className="opacity-90">{tile.icon}</span>
-      <div>
-        <p className="text-sm font-semibold leading-tight">{tile.label}</p>
-        <p className="text-[11px] opacity-75">{tile.sub}</p>
+      <div
+        className="flex flex-col items-center gap-2"
+        style={flipContent ? { transform: 'rotate(180deg)' } : undefined}
+      >
+        <span className="opacity-90">{tile.icon}</span>
+        <div>
+          <p className="text-sm font-semibold leading-tight">{tile.label}</p>
+          <p className="text-[11px] opacity-75">{tile.sub}</p>
+        </div>
       </div>
     </div>
   );
@@ -132,45 +139,41 @@ const services = [
   {
     number: '01',
     bg: 'bg-indigo-900',
-    title: 'Process cycles that drive yield & consistency.',
+    title: 'Freeze-Drying',
     description:
-      "We map your product's moisture curve, tune primary and secondary drying, and build a repeatable SOP your operators can run without guesswork. Every engagement ships a validated recipe, a cycle log template, and a troubleshooting guide. The goal is simple: scrap down, yield up.",
-    quote: 'They rebuilt our freeze-dry cycle from scratch and cut batch time by almost a third without touching product quality.',
-    author: 'Maya Chen',
-    role: 'Founder @Thistle & Bloom',
+      "ATS Global is the Independent Solution Provider for Smart Digital Transformation. We are a passionate automation, quality and IT enterprise delivering tangible business value to our customers world-wide. Established in 1986, ATS Global continues its journey on the path to digital transformation.",
     tiles: ['Cycle A', 'Cycle B', 'QC Log'],
   },
   {
     number: '02',
     bg: 'bg-slate-800',
-    title: 'Controls & automation teams actually trust.',
+    title: 'Sterilization',
     description:
-      "We start from your plant's failure modes, map the critical alarms, and build monitoring that operators check instead of ignore. Every sprint ships clear HMI screens, a data-logging layer, and a maintenance-ready wiring set. Expect downtime down, traceability up.",
-    quote: 'The new HMI is the first thing our night shift actually likes using.',
-    author: 'Owen Reyes',
-    role: 'Co-Founder @Alpine Provisions',
+      "Getinge ISOTEST is an isolator designed for sterility testing of sterile drugs, components, and devices. Continuous workflow, easy access, and fast bio-decontamination help increase productivity.",
     tiles: ['HMI', 'Alarms', 'Logs'],
   },
   {
     number: '03',
     bg: 'bg-red-600',
-    title: 'Facility layouts for growing production lines.',
+    title: 'Homogenization',
     description:
-      'We align throughput targets, room adjacencies, and utility runs before a single wall goes up. You get a clear floor plan, an equipment spec sheet, and a phased build-out you can fund in stages. Your team gets a layout it can scale without re-engineering the whole plant.',
-    quote: 'We expanded from one line to three in the same footprint. That plan is why.',
-    author: 'Priya Nandi',
-    role: 'Ops Lead @Harvest Collective',
+      'Ever since our company’s founder, Professor Willems, revolutionized the industry with his rotor / stator invention, Kinematica has continued perfecting the technique by customizing and engineering its solutions to fit the most demanding applications.',
     tiles: ['Layout', 'Utilities', 'Phasing'],
   },
   {
     number: '04',
     bg: 'bg-amber-900',
-    title: 'Documentation that survives an audit.',
+    title: 'Packaging Inspection pti-ccit',
     description:
-      'We turn tribal knowledge into SOPs, batch records, and validation packets your QA team can actually defend. Your documentation can be handed to a new operator, read solo, and holds up when an auditor asks why.',
-    quote: 'First co-packer audit we passed on the first try. The paperwork did the work for us.',
-    author: 'Marcus Webb',
-    role: 'Founder @Coastal Cure Co.',
+      'PTI - Packaging Technologies & Inspection is headquartered in Hawthorne, New York, a Westchester county community close to New York City. PTI is a collective of scientists, engineers and packaging practitioners focused on improving the entire package quality experience throughout the packaging lifecycle.',
+    tiles: ['SOPs', 'Batch Rec.', 'Validation'],
+  },
+  {
+    number: '05',
+    bg: 'bg-orange-500',
+    title: 'Process Spectroscopy & PAT',
+    description:
+      'The Liebherr Group is a family-run technology company with a broadly diversified product programme, which includes a total of 13 product segments. tec5 thereby covers the entire technology chain for the development and production of the systems, setting standards in the flexible and rapid adaptation of the devices to meet individual process requirements and customer demands.We specialize in MEMS-based near-infrared spectral measurements and offer digital solutions, including app and cloud platforms, for seamless data processing and analysis.',
     tiles: ['SOPs', 'Batch Rec.', 'Validation'],
   },
 ];
@@ -272,8 +275,8 @@ export default function ProcessTechnologyPage() {
       </section>
 
       {/* See more work — circle section */}
-      <section id="work" className="relative overflow-hidden py-24 sm:py-32 px-6 text-white bg-[#0b0b0c] scroll-mt-24">
-        <div className="max-w-7xl mx-auto">
+      <section id="work" className="relative overflow-hidden py-24 sm:py-32 px-6 text-white scroll-mt-24">
+        <div className="max-w-full">
           <div className="group relative min-h-[420px] sm:min-h-[520px] flex items-center justify-center">
             <div className="absolute inset-0 origin-center scale-[0.8] transition-transform duration-500 ease-out group-hover:scale-[0.65]">
               <RotatingCircle className="absolute inset-0">
@@ -284,7 +287,7 @@ export default function ProcessTechnologyPage() {
             </div>
 
             <div className="relative z-10 text-center px-4">
-              <p className="uppercase tracking-[0.3em] text-xs text-white/40 mb-4">Our Work</p>
+              <p className="uppercase tracking-[0.3em] text-xs text-black/40 mb-4">Our Work</p>
               <Link
                 href="/shop"
                 className="mt-8 inline-flex items-center gap-2 rounded-full bg-white text-gray-900 text-sm font-semibold px-6 py-3 no-underline transition-transform hover:-translate-y-0.5"
@@ -314,10 +317,9 @@ export default function ProcessTechnologyPage() {
 
       {/* Below section — what we ship */}
       <section id="services" className="bg-[#f5f1e8] pt-8 sm:pt-28 px-4 scroll-mt-24">
-        <div className="max-w-6xl mx-auto text-left">
+        <div className="max-w-7xl mx-auto text-left">
           <p className="uppercase tracking-[0.3em] text-xs text-gray-500 mb-3">What we ship</p>
-          <h2 className="text-4xl sm:text-5xl font-bold text-gray-900! m-0 mb-14">Our ways to move fast</h2>
-
+          <h2 className="text-4xl sm:text-5xl font-bold text-gray-900! m-0">Our ways to move fast</h2>
           <StackedServiceCards services={services} />
         </div>
       </section>
