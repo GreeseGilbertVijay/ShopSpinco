@@ -32,6 +32,9 @@ export function useScrollRotation<T extends HTMLElement>() {
       if (Math.abs(scrollBoost.current) < 0.001) scrollBoost.current = 0;
       if (ref.current) {
         ref.current.style.transform = `rotate(${rotation.current}deg)`;
+        // exposed so descendants (e.g. tile content) can counter-rotate and
+        // stay upright no matter how far the ring has spun
+        ref.current.style.setProperty('--spin', `${rotation.current}deg`);
       }
       frameId = requestAnimationFrame(tick);
     }

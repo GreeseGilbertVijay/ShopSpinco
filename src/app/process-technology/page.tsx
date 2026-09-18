@@ -1,11 +1,9 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import ProcessTechnologyNavbar from '@/components/ProcessTechnologyNavbar';
 import RotatingCircle from '@/components/RotatingCircle';
 import Avatar from '@/components/Avatar';
 import StackedServiceCards from '@/components/StackedServiceCards';
 import TrustedByFan from '@/components/TrustedByFan';
-
 
 export const metadata: Metadata = {
   title: 'Process & Technology · ShopSpinco',
@@ -51,37 +49,69 @@ function BoxIcon() {
     </svg>
   );
 }
-function FlaskIcon() {
+function SlidersIcon() {
   return (
     <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <path d="M9 3h6M10 3v6.5L4.8 18a1.6 1.6 0 0 0 1.4 2.4h11.6a1.6 1.6 0 0 0 1.4-2.4L14 9.5V3" />
+      <path d="M4 6h10M18 6h2M4 12h4M12 12h8M4 18h10M18 18h2" />
+      <circle cx="16" cy="6" r="2" />
+      <circle cx="10" cy="12" r="2" />
+      <circle cx="16" cy="18" r="2" />
     </svg>
   );
 }
-function LeafIcon() {
+function PackageIcon() {
   return (
     <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <path d="M5 21c9 0 14-5 14-14V5h-2C8 5 5 10 5 19v2Z" />
-      <path d="M5 21c0-6 3-10 8-13" />
+      <rect x="3" y="7" width="18" height="13" rx="1.5" />
+      <path d="M3 11h18M10 7V4h4v3" />
+      <circle cx="7" cy="14.5" r="1" fill="currentColor" stroke="none" />
+      <circle cx="11" cy="14.5" r="1" fill="currentColor" stroke="none" />
+    </svg>
+  );
+}
+function MicroscopeIcon() {
+  return (
+    <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M6 20h12M9 20a5 5 0 0 0 8.5-5" />
+      <path d="M11 3h3v7h-3zM12.5 10v3" />
+      <path d="M10 13h5" />
     </svg>
   );
 }
 
+type Capability = {
+  label: string;
+  icon: React.ReactNode;
+};
+
+const capabilities: Capability[] = [
+  { label: 'Precision Thermal Control', icon: <ThermometerIcon /> },
+  { label: 'Automation & Controls', icon: <SlidersIcon /> },
+  { label: 'Cold Chain Systems', icon: <SnowflakeIcon /> },
+  { label: 'Quality & Lab Testing', icon: <MicroscopeIcon /> },
+];
+
 const workTiles: WorkTile[] = [
+  { label: 'Lab QC', sub: 'Quality', gradient: 'from-sky-500 to-sky-700', icon: <MicroscopeIcon /> },
   { label: 'Vacuum Chamber', sub: 'Equipment', gradient: 'from-indigo-500 to-indigo-700', icon: <SnowflakeIcon /> },
   { label: 'IQF Tunnel', sub: 'Process Line', gradient: 'from-accent to-accent-hover', icon: <ThermometerIcon /> },
   { label: 'Blast Freezer', sub: 'Cold Chain', gradient: 'from-emerald-500 to-emerald-700', icon: <GaugeIcon /> },
-  { label: 'Control Panel', sub: 'Automation', gradient: 'from-rose-500 to-rose-700', icon: <FlaskIcon /> },
-  { label: 'Packaging Cell', sub: 'Line Design', gradient: 'from-amber-600 to-amber-800', icon: <BoxIcon /> },
-  { label: 'Lab QC', sub: 'Quality', gradient: 'from-sky-500 to-sky-700', icon: <LeafIcon /> },
-  { label: 'Cold Storage', sub: 'Warehousing', gradient: 'from-violet-500 to-violet-700', icon: <BoxIcon /> },
- 
+  { label: 'Control Panel', sub: 'Automation', gradient: 'from-fuchsia-500 to-fuchsia-700', icon: <SlidersIcon /> },
+  { label: 'Packaging Cell', sub: 'Line Design', gradient: 'from-amber-500 to-amber-700', icon: <PackageIcon /> },
+
+
+  
 ];
 
 const CARD_SIZE = 200;
 const CARD_GAP = 72;
 // radius that keeps adjacent card edges CARD_GAP apart along the ring
 const CIRCLE_RADIUS = Math.round((CARD_SIZE + CARD_GAP) / (2 * Math.sin(Math.PI / workTiles.length)));
+// a square hugging the tile ring (worst-case rotated-card corner reach) plus a
+// small buffer, used as the hover/zoom trigger zone so only getting close to
+// the tiles themselves (not the whole empty section) shrinks the circle
+const TILE_HOVER_PADDING = 10;
+const HOVER_ZONE_SIZE = Math.round(2 * (CIRCLE_RADIUS + CARD_SIZE / Math.SQRT2) + TILE_HOVER_PADDING * 2);
 
 function getCirclePosition(index: number, total: number) {
   const angle = (360 / total) * index - 120;
@@ -195,7 +225,7 @@ const testimonials = [
     author: 'Owen Reyes',
     role: 'Co-Founder @Alpine Provisions',
     dark: true,
-    leftPercent: 14,
+    leftPercent: 18,
     topPx: 24,
     rotateDeg: -4,
   },
@@ -205,7 +235,7 @@ const testimonials = [
     author: 'Priya Nandi',
     role: 'Ops Lead @Harvest Collective',
     dark: false,
-    leftPercent: 30,
+    leftPercent: 36,
     topPx: 0,
     rotateDeg: 0,
   },
@@ -215,7 +245,7 @@ const testimonials = [
     author: 'Marcus Webb',
     role: 'Founder @Coastal Cure Co.',
     dark: true,
-    leftPercent: 46,
+    leftPercent: 54,
     topPx: 20,
     rotateDeg: 4,
   },
@@ -225,7 +255,7 @@ const testimonials = [
     author: 'Elena Sato',
     role: 'CEO @Root & Ready Foods',
     dark: false,
-    leftPercent: 60,
+    leftPercent: 72,
     topPx: 4,
     rotateDeg: 9,
   },
@@ -250,17 +280,63 @@ const partnerLogos = [
 export default function ProcessTechnologyPage() {
   return (
     <>
-      <ProcessTechnologyNavbar />
-      <div className="pt-[74px]">
-      {/* Hero — heading + partner logo slider */}
-      <section className="pt-16 pb-12 sm:pt-24 sm:pb-16 px-6">
-        <div className="max-w-full mx-auto text-center">
+      {/* Hero — heading, pitch, CTAs, capability strip, partner logo slider */}
+      <section className="relative overflow-hidden pt-20 pb-16 sm:pt-28 sm:pb-20 px-6">
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute -top-40 left-1/2 -translate-x-1/2 w-[900px] h-[900px] rounded-full bg-accent/10 blur-3xl"
+        />
+
+        <div className="relative max-w-3xl mx-auto text-center">
+          <p className="uppercase tracking-[0.3em] text-xs font-semibold text-accent-hover mb-5">
+            Engineering · Automation · Cold Chain
+          </p>
           <h1 className="text-5xl sm:text-6xl md:text-7xl font-bold leading-[1.05] text-gray-900! m-0">
             Process Technology
           </h1>
+          <p className="mt-6 text-base sm:text-lg text-gray-500 leading-relaxed max-w-xl mx-auto">
+            From vacuum chamber design to line automation, our engineering team builds the freeze-drying,
+            sterilization, and packaging systems that keep your product moving — reliably, and at scale.
+          </p>
+
+          <div className="mt-9 flex items-center justify-center gap-3 flex-wrap">
+            <a
+              href="#work"
+              className="inline-flex items-center gap-2 rounded-full bg-gray-900 text-white text-sm font-semibold px-6 py-3 no-underline transition-all hover:bg-black hover:-translate-y-0.5 hover:shadow-elevated"
+            >
+              See our work
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <path d="M12 5v14M5 12l7 7 7-7" />
+              </svg>
+            </a>
+            <a
+              href="https://spincotech.com/contact-us/"
+              className="inline-flex items-center gap-2 rounded-full bg-white text-gray-900 text-sm font-semibold px-6 py-3 no-underline border border-gray-200 transition-all hover:border-accent hover:-translate-y-0.5"
+            >
+              Talk to an engineer
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <path d="M5 12h14M13 5l7 7-7 7" />
+              </svg>
+            </a>
+          </div>
         </div>
 
-        <div className="mt-12 sm:mt-16 overflow-hidden">
+        <div className="relative mt-16 sm:mt-20 max-w-4xl mx-auto grid grid-cols-2 sm:grid-cols-4 gap-4 sm:gap-6">
+          {capabilities.map((cap) => (
+            <div
+              key={cap.label}
+              className="flex flex-col items-center gap-2 text-center rounded-2xl px-3 py-5 bg-gray-50 border border-gray-100 transition-colors hover:border-accent/40"
+            >
+              <span className="text-accent-hover">{cap.icon}</span>
+              <p className="text-xs sm:text-sm font-medium text-gray-700 leading-tight m-0">{cap.label}</p>
+            </div>
+          ))}
+        </div>
+
+        <div className="relative mt-16 sm:mt-20 overflow-hidden">
+          <p className="text-center uppercase tracking-[0.3em] text-[11px] text-gray-400 mb-6">
+            Technology partners powering our lines
+          </p>
           <div className="flex items-center gap-16 w-max animate-marquee">
             {[...partnerLogos, ...partnerLogos].map((file, i) => (
               <img
@@ -274,11 +350,38 @@ export default function ProcessTechnologyPage() {
         </div>
       </section>
 
-      {/* See more work — circle section */}
-      <section id="work" className="relative overflow-hidden py-24 sm:py-32 px-6 text-white scroll-mt-24">
-        <div className="max-w-full">
-          <div className="group relative min-h-[420px] sm:min-h-[520px] flex items-center justify-center">
-            <div className="absolute inset-0 origin-center scale-[0.8] transition-transform duration-500 ease-out group-hover:scale-[0.65]">
+      {/* See more of our work — circle section */}
+      <section
+        id="work"
+        className="relative overflow-hidden py-24 sm:py-32 px-6 text-white scroll-mt-24 bg-gradient-to-b from-gray-950 via-gray-900 to-gray-950"
+      >
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[700px] rounded-full bg-accent/10 blur-3xl"
+        />
+
+        <div className="relative max-w-2xl mx-auto text-center mb-16 sm:mb-20">
+          <p className="uppercase tracking-[0.3em] text-xs text-white/40 mb-4">Our Work</p>
+          <h2 className="text-4xl sm:text-5xl font-bold text-white m-0">
+            Equipment we design, install, and support
+          </h2>
+          <p className="mt-4 text-white/60 text-base sm:text-lg">
+            A closer look at the lines and tooling behind a typical Spinco engagement — from first vacuum test to
+            full production.
+          </p>
+        </div>
+
+        <div className="relative max-w-full">
+          <div className="relative min-h-[420px] sm:min-h-[520px] flex items-center justify-center">
+            <div
+              className="absolute origin-center scale-[0.8] transition-transform duration-500 ease-out hover:scale-[0.65]"
+              style={{
+                width: HOVER_ZONE_SIZE,
+                height: HOVER_ZONE_SIZE,
+                left: `calc(50% - ${HOVER_ZONE_SIZE / 2}px)`,
+                top: `calc(50% - ${HOVER_ZONE_SIZE / 2}px)`,
+              }}
+            >
               <RotatingCircle className="absolute inset-0">
                 {workTiles.map((tile, i) => (
                   <WorkTileCard key={tile.label} tile={tile} index={i} />
@@ -287,10 +390,9 @@ export default function ProcessTechnologyPage() {
             </div>
 
             <div className="relative z-10 text-center px-4">
-              <p className="uppercase tracking-[0.3em] text-xs text-black/40 mb-4">Our Work</p>
               <Link
                 href="/shop"
-                className="mt-8 inline-flex items-center gap-2 rounded-full bg-white text-gray-900 text-sm font-semibold px-6 py-3 no-underline transition-transform hover:-translate-y-0.5"
+                className="inline-flex items-center gap-2 rounded-full bg-white text-gray-900 text-sm font-semibold px-6 py-3 no-underline shadow-lifted transition-transform hover:-translate-y-0.5"
               >
                 Explore the archive
                 <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -305,7 +407,7 @@ export default function ProcessTechnologyPage() {
             {workTiles.map((tile) => (
               <div
                 key={tile.label}
-                className={`flex flex-col justify-between rounded-xl p-3 h-24 bg-gradient-to-br ${tile.gradient} text-white cursor-pointer`}
+                className={`flex flex-col justify-between rounded-xl p-3 h-24 bg-gradient-to-br ${tile.gradient} text-white shadow-lifted cursor-pointer transition-transform hover:-translate-y-0.5`}
               >
                 <span className="opacity-90 scale-75 origin-top-left">{tile.icon}</span>
                 <p className="text-[10px] font-semibold leading-tight">{tile.label}</p>
@@ -316,27 +418,38 @@ export default function ProcessTechnologyPage() {
       </section>
 
       {/* Below section — what we ship */}
-      <section id="services" className="bg-[#f5f1e8] pt-8 sm:pt-28 px-4 scroll-mt-24">
+      <section id="services" className="pt-4 px-4 scroll-mt-24">
         <div className="max-w-7xl mx-auto text-left">
           <p className="uppercase tracking-[0.3em] text-xs text-gray-500 mb-3">What we ship</p>
           <h2 className="text-4xl sm:text-5xl font-bold text-gray-900! m-0">Our ways to move fast</h2>
+          <p className="mt-4 max-w-2xl text-gray-500 text-base sm:text-lg">
+            Each engagement pairs proven equipment partners with our own controls and validation work — scroll
+            through a few of the disciplines we cover.
+          </p>
           <StackedServiceCards services={services} />
         </div>
       </section>
 
       {/* Trusted by +40 founders */}
-      <section id="trusted" className="bg-[#f5f1e8] pb-24 sm:pb-32 px-6 overflow-hidden scroll-mt-2">
-        <div className="max-w-6xl mx-auto">
+      <section id="trusted" className=" pb-24 sm:pb-32 px-6 overflow-hidden scroll-mt-2">
+        <div className="max-w-6xl mx-auto text-center">
           <div className="mb-24">
             <h2 className="text-5xl sm:text-6xl font-bold leading-[0.95] m-0">
               <span className="text-gray-900!">Trusted by</span>
               <br />
               <span className="text-gray-400!">+40 founders</span>
             </h2>
+            <p className="mt-6 max-w-xl mx-auto text-gray-500 text-base sm:text-lg">
+              Food, biotech, and pharma teams bring us in when a line has to work the first time.
+            </p>
           </div>
 
-          {/* desktop fan */}
-          <TrustedByFan testimonials={testimonials} />
+          {/* desktop fan — fixed width matches the scattered cards' own
+              footprint so the cluster centers as a block, since the cards
+              are positioned with left-percent offsets, not centered text */}
+          <div className="mx-auto" style={{ width: 1000 }}>
+            <TrustedByFan testimonials={testimonials} />
+          </div>
 
           {/* mobile scroll list */}
           <div className="sm:hidden flex gap-4 overflow-x-auto pb-2 -mx-6 px-6 snap-x snap-mandatory">
@@ -370,7 +483,34 @@ export default function ProcessTechnologyPage() {
           </div>
         </div>
       </section>
-      </div>
+
+      {/* Closing CTA */}
+      <section className="border-t border-gray-100 bg-gray-50 px-6 py-16 sm:py-20">
+        <div className="max-w-3xl mx-auto text-center">
+          <h2 className="text-3xl sm:text-4xl font-bold text-gray-900! m-0">Have a line that needs engineering?</h2>
+          <p className="mt-4 text-gray-500 text-base sm:text-lg max-w-xl mx-auto">
+            Tell us about your process and we will follow up with next steps — equipment selection, automation
+            scope, and a realistic timeline.
+          </p>
+          <div className="mt-8 flex items-center justify-center gap-3 flex-wrap">
+            <a
+              href="https://spincotech.com/contact-us/"
+              className="inline-flex items-center gap-2 rounded-full bg-gray-900 text-white text-sm font-semibold px-6 py-3 no-underline transition-all hover:bg-black hover:-translate-y-0.5 hover:shadow-elevated"
+            >
+              Talk to an engineer
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <path d="M5 12h14M13 5l7 7-7 7" />
+              </svg>
+            </a>
+            <Link
+              href="/shop"
+              className="inline-flex items-center gap-2 rounded-full bg-white text-gray-900 text-sm font-semibold px-6 py-3 no-underline border border-gray-200 transition-all hover:border-accent hover:-translate-y-0.5"
+            >
+              Browse the shop
+            </Link>
+          </div>
+        </div>
+      </section>
     </>
   );
 }
