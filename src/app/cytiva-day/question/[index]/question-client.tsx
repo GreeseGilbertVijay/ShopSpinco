@@ -149,7 +149,7 @@ export default function QuestionClient({ pageIndex }: { pageIndex: string }) {
           </span>
         </div>
 
-        <h1 className="whitespace-pre-line text-left text-xl sm:text-2xl font-bold text-[#008f88]! mb-6 leading-snug">{question.question}</h1>
+        <h2 className="whitespace-pre-line text-left font-bold text-[#008f88]! mb-8 leading-snug">{question.question}</h2>
 
         <div className="flex flex-col gap-3 mb-8">
           {question.options.map((option, i) => (

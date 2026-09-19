@@ -30,9 +30,9 @@ export default function CytivaDayStartPage() {
   return (
     <div className="min-h-screen w-full flex items-center justify-center bg-gray-50 p-4">
       <Card className="w-full max-w-md p-6 sm:p-8 text-center shadow-lifted bg-[#e4f7f4]!">
-        <h1 className="text-3xl sm:text-4xl font-bold text-[#008f88]! mb-1">Cytiva Day Quiz</h1>
+        <h1 className="text-2xl! sm:text-4xl! font-bold text-[#008f88]! mb-1">Cytiva Day Quiz</h1>
         <form onSubmit={handleStart} className="flex flex-col gap-4 text-left">
-          <label className="flex flex-col gap-1.5 text-sm font-medium text-[#008f88]">
+          <label className="flex flex-col gap-1.5 text-xs sm:text-sm font-medium text-[#008f88]">
             Name
             <Input
               value={name}
@@ -40,13 +40,13 @@ export default function CytivaDayStartPage() {
               placeholder="Your full name"
               autoFocus
               required
-              className="border-[#008f88]! focus:border-[#008f88]! focus:ring-[#008f88]/20!"
+              className="border-[#008f88]! focus:border-[#008f88]! focus:ring-[#008f88]/20! text-sm! sm:text-base!"
             />
           </label>
 
-          {error && <p className="text-sm text-danger">{error}</p>}
+          {error && <p className="text-xs sm:text-sm text-danger">{error}</p>}
 
-          <button type="submit" className={buttonClasses({ size: 'lg', className: 'w-full' })} disabled={!name.trim() || submitting}>
+          <button type="submit" className={buttonClasses({ size: 'lg', className: 'w-full text-sm! sm:text-base!' })} disabled={!name.trim() || submitting}>
             {submitting ? 'Starting...' : 'Start'}
           </button>
         </form>

@@ -56,17 +56,17 @@ export default function CytivaDayCompleteClient() {
                 <path d="M20 6 9 17l-5-5" />
               </svg>
             </span>
-            <h1 className="text-3xl sm:text-4xl font-bold text-[#008f88]! mb-1">Nice work, {name}!</h1>
-            <p className="text-[#008f88] mb-6">You&apos;ve completed the Cytiva Day quiz.</p>
+            <h1 className="text-2xl! sm:text-4xl! font-bold text-[#008f88]! mb-1">Nice work, {name}!</h1>
+            <p className="text-sm sm:text-base text-[#008f88] mb-6">You&apos;ve completed the Cytiva Day quiz.</p>
 
             <div className="rounded-xl bg-accent-subtle px-6 py-5">
               <p className="text-xs uppercase tracking-wide text-[#008f88] mb-1">Your score</p>
-              <p className="text-4xl font-bold text-[#008f88]!">
-                {score} <span className="text-lg font-medium text-[#008f88]">/ {maxScore}</span>
+              <p className="text-3xl sm:text-4xl font-bold text-[#008f88]!">
+                {score} <span className="text-base sm:text-lg font-medium text-[#008f88]">/ {maxScore}</span>
               </p>
             </div>
 
-            <p className="text-sm text-[#008f88] mt-6">Final rankings will be announced by the organizers.</p>
+            <p className="text-xs sm:text-sm text-[#008f88] mt-6">Final Rankings Will be Announced by the Organizers.</p>
           </>
         )}
       </Card>
