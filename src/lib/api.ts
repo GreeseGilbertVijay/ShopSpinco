@@ -291,6 +291,7 @@ export async function getCytivaDayEntryState(id: string): Promise<{
   name: string;
   status: 'in-progress' | 'completed';
   currentQuestion: number;
+  currentQuestionElapsedSeconds: number;
   totalScore: number;
   totalQuestions: number;
   marksPerQuestion: number;
@@ -303,7 +304,7 @@ export async function getCytivaDayEntryState(id: string): Promise<{
 
 export async function submitCytivaDayAnswer(
   id: string,
-  payload: { questionIndex: number; selectedOption: number | null; timeTakenSeconds: number }
+  payload: { questionIndex: number; selectedOption: number | null }
 ): Promise<{ completed: boolean; nextQuestion: CytivaDayQuestionView | null; totalScore?: number; currentQuestion?: number; question?: CytivaDayQuestionView | null }> {
   const res = await fetch(`/api/cytiva-day/${id}/answer`, {
     method: 'POST',
@@ -317,7 +318,7 @@ export async function submitCytivaDayAnswer(
   return data;
 }
 
-export async function getCytivaDayEntries(): Promise<CytivaDayEntry[]> {
+export async function getCytivaDayEntries(): Promise<{ entries: CytivaDayEntry[]; totalQuestions: number }> {
   const res = await fetch('/api/cytiva-day/entries');
   if (res.status === 401 || res.status === 403) {
     throw new ApiError('Session expired', { status: res.status });

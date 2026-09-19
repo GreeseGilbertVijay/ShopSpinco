@@ -18,7 +18,6 @@ import Tabs from '@/components/ui/Tabs';
 import { buttonClasses } from '@/components/ui/Button';
 import ConfirmDialog from '@/components/ConfirmDialog';
 
-const TOTAL_QUESTIONS = 5;
 const POLL_INTERVAL_MS = 5000;
 
 function DeleteIcon() {
@@ -36,6 +35,7 @@ function DeleteIcon() {
 export default function CytivaDayDashboard() {
   const router = useRouter();
   const [entries, setEntries] = useState<CytivaDayEntry[]>([]);
+  const [totalQuestions, setTotalQuestions] = useState(0);
   const [status, setStatus] = useState<'loading' | 'ready' | 'error'>('loading');
   const [tab, setTab] = useState<'submissions' | 'leaderboard'>('submissions');
   const [exporting, setExporting] = useState(false);
@@ -49,7 +49,8 @@ export default function CytivaDayDashboard() {
       getCytivaDayEntries()
         .then((data) => {
           if (cancelled) return;
-          setEntries(data);
+          setEntries(data.entries);
+          setTotalQuestions(data.totalQuestions);
           setStatus('ready');
         })
         .catch((err) => {
@@ -181,8 +182,8 @@ export default function CytivaDayDashboard() {
                   </Td>
                   <Td>
                     {entry.status === 'completed'
-                      ? `${TOTAL_QUESTIONS} / ${TOTAL_QUESTIONS}`
-                      : `${entry.currentQuestion} / ${TOTAL_QUESTIONS}`}
+                      ? `${totalQuestions} / ${totalQuestions}`
+                      : `${entry.currentQuestion} / ${totalQuestions}`}
                   </Td>
                   <Td>{entry.totalScore}</Td>
                   <Td>{entry.totalTimeSeconds}s</Td>
@@ -208,7 +209,7 @@ export default function CytivaDayDashboard() {
       )}
 
       {status === 'ready' && tab === 'leaderboard' && leaderboard.length === 0 && (
-        <EmptyState title="No completed attempts yet" description="The leaderboard fills in as participants finish all 5 questions." />
+        <EmptyState title="No completed attempts yet" description="The leaderboard fills in as participants finish all the questions." />
       )}
 
       {status === 'ready' && tab === 'leaderboard' && leaderboard.length > 0 && (

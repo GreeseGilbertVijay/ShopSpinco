@@ -16,10 +16,16 @@ export async function GET(_req: NextRequest, { params }: RouteContext) {
   const entry = await CytivaDayEntry.findById(id).catch(() => null);
   if (!entry) return NextResponse.json({ message: 'Entry not found' }, { status: 404 });
 
+  const currentQuestionElapsedSeconds =
+    entry.status === 'in-progress'
+      ? Math.max(Math.floor((Date.now() - entry.currentQuestionStartedAt.getTime()) / 1000), 0)
+      : 0;
+
   return NextResponse.json({
     name: entry.name,
     status: entry.status,
     currentQuestion: entry.currentQuestion,
+    currentQuestionElapsedSeconds,
     totalScore: entry.totalScore,
     totalQuestions: CYTIVA_DAY_QUESTIONS.length,
     marksPerQuestion: MARKS_PER_QUESTION,

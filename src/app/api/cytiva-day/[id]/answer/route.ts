@@ -10,7 +10,7 @@ interface RouteContext {
 // Public: submit an answer for the current question and advance the attempt
 export async function POST(req: NextRequest, { params }: RouteContext) {
   const { id } = await params;
-  const { questionIndex, selectedOption, timeTakenSeconds } = await req.json();
+  const { questionIndex, selectedOption } = await req.json();
 
   await connectDB();
   const entry = await CytivaDayEntry.findById(id).catch(() => null);
@@ -41,7 +41,9 @@ export async function POST(req: NextRequest, { params }: RouteContext) {
   const normalizedSelection = typeof selectedOption === 'number' ? selectedOption : null;
   const correct = normalizedSelection !== null && normalizedSelection === question.correctIndex;
   const marks = correct ? MARKS_PER_QUESTION : 0;
-  const safeTime = typeof timeTakenSeconds === 'number' && timeTakenSeconds >= 0 ? timeTakenSeconds : 0;
+  // Timed server-side from when this question actually became current, so a page
+  // refresh (which restarts the on-screen stopwatch) can't be used to under-report time.
+  const safeTime = Math.max(Math.floor((Date.now() - entry.currentQuestionStartedAt.getTime()) / 1000), 0);
 
   entry.answers.push({
     question: questionIndex,
@@ -58,6 +60,8 @@ export async function POST(req: NextRequest, { params }: RouteContext) {
   if (completed) {
     entry.status = 'completed';
     entry.completedAt = new Date();
+  } else {
+    entry.currentQuestionStartedAt = new Date();
   }
 
   await entry.save();
