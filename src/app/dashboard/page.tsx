@@ -27,6 +27,12 @@ const actions = [
     icon: <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8Zm7 4a3 3 0 0 0 0-6M23 21v-2a4 4 0 0 0-3-3.87" />,
   },
   {
+    href: '/dashboard/cytiva-day',
+    title: 'Cytiva Day Quiz',
+    description: 'Live quiz submissions and the leaderboard.',
+    icon: <path d="M12 2 2 7l10 5 10-5-10-5Z M2 17l10 5 10-5 M2 12l10 5 10-5" />,
+  },
+  {
     href: '/dashboard/users',
     title: 'View All Users',
     description: 'Manage every account in the system.',

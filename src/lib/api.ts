@@ -249,3 +249,97 @@ export async function exportQuotes({ from, to }: { from?: string; to?: string } 
   if (!res.ok) throw new ApiError('Failed to export submissions', { status: res.status });
   return res.blob();
 }
+
+export interface CytivaDayQuestionView {
+  index: number;
+  total: number;
+  question: string;
+  options: string[];
+}
+
+export interface CytivaDayAnswer {
+  question: number;
+  selectedOption: number | null;
+  correct: boolean;
+  marks: number;
+  timeTakenSeconds: number;
+}
+
+export interface CytivaDayEntry {
+  _id: string;
+  name: string;
+  status: 'in-progress' | 'completed';
+  currentQuestion: number;
+  answers: CytivaDayAnswer[];
+  totalScore: number;
+  totalTimeSeconds: number;
+  startedAt: string;
+  completedAt?: string;
+}
+
+export async function startCytivaDay(name: string): Promise<{ id: string; question: CytivaDayQuestionView }> {
+  const res = await fetch('/api/cytiva-day/start', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ name }),
+  });
+  if (!res.ok) throw new ApiError(await parseErrorMessage(res, 'Failed to start the quiz'), { status: res.status });
+  return res.json();
+}
+
+export async function getCytivaDayEntryState(id: string): Promise<{
+  name: string;
+  status: 'in-progress' | 'completed';
+  currentQuestion: number;
+  totalScore: number;
+  totalQuestions: number;
+  marksPerQuestion: number;
+  question: CytivaDayQuestionView | null;
+}> {
+  const res = await fetch(`/api/cytiva-day/${id}`);
+  if (!res.ok) throw new ApiError(await parseErrorMessage(res, 'Failed to load quiz progress'), { status: res.status });
+  return res.json();
+}
+
+export async function submitCytivaDayAnswer(
+  id: string,
+  payload: { questionIndex: number; selectedOption: number | null; timeTakenSeconds: number }
+): Promise<{ completed: boolean; nextQuestion: CytivaDayQuestionView | null; totalScore?: number; currentQuestion?: number; question?: CytivaDayQuestionView | null }> {
+  const res = await fetch(`/api/cytiva-day/${id}/answer`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok && res.status !== 409) {
+    throw new ApiError(data.message || 'Failed to submit answer', { status: res.status });
+  }
+  return data;
+}
+
+export async function getCytivaDayEntries(): Promise<CytivaDayEntry[]> {
+  const res = await fetch('/api/cytiva-day/entries');
+  if (res.status === 401 || res.status === 403) {
+    throw new ApiError('Session expired', { status: res.status });
+  }
+  if (!res.ok) throw new ApiError('Failed to load quiz submissions', { status: res.status });
+  return res.json();
+}
+
+export async function deleteCytivaDayEntry(id: string) {
+  const res = await fetch(`/api/cytiva-day/${id}`, { method: 'DELETE' });
+  if (res.status === 401 || res.status === 403) {
+    throw new ApiError('Session expired', { status: res.status });
+  }
+  if (!res.ok) throw new ApiError(await parseErrorMessage(res, 'Failed to delete submission'), { status: res.status });
+  return res.json();
+}
+
+export async function exportCytivaDayEntries(): Promise<Blob> {
+  const res = await fetch('/api/cytiva-day/export');
+  if (res.status === 401 || res.status === 403) {
+    throw new ApiError('Session expired', { status: res.status });
+  }
+  if (!res.ok) throw new ApiError('Failed to export quiz submissions', { status: res.status });
+  return res.blob();
+}
