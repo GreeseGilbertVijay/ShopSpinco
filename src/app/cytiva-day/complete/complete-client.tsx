@@ -26,7 +26,11 @@ export default function CytivaDayCompleteClient() {
       .then((state) => {
         if (cancelled) return;
         if (state.status !== 'completed') {
-          router.replace(`/cytiva-day/question/${state.currentQuestion + 1}?sid=${sid}`);
+          if (state.currentQuestion < 0) {
+            router.replace(`/cytiva-day/waiting?sid=${sid}`);
+          } else {
+            router.replace(`/cytiva-day/question/${state.currentQuestion + 1}?sid=${sid}`);
+          }
           return;
         }
         setName(state.name);

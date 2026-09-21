@@ -21,6 +21,22 @@ export async function GET(_req: NextRequest, { params }: RouteContext) {
   const totalQuestions = CYTIVA_DAY_QUESTIONS.length;
   const globallyCompleted = session.currentQuestion >= totalQuestions;
 
+  if (session.currentQuestion < 0) {
+    const totalParticipants = await CytivaDayEntry.countDocuments({});
+    return NextResponse.json({
+      name: entry.name,
+      status: 'in-progress',
+      currentQuestion: -1,
+      currentQuestionElapsedSeconds: 0,
+      totalScore: entry.totalScore,
+      totalQuestions,
+      marksPerQuestion: MARKS_PER_QUESTION,
+      question: null,
+      waiting: true,
+      totalParticipants,
+    });
+  }
+
   // The host ending the quiz is a single global event — reconcile stragglers who hadn't
   // been marked completed yet (e.g. they were mid-question when the host finished).
   if (globallyCompleted && entry.status !== 'completed') {

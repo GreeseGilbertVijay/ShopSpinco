@@ -9,6 +9,7 @@ import {
   exportCytivaDayEntries,
   getCytivaDaySession,
   advanceCytivaDaySession,
+  resetCytivaDaySession,
   ApiError,
   type CytivaDayEntry,
   type CytivaDaySessionState,
@@ -48,6 +49,9 @@ export default function CytivaDayDashboard() {
   const [pendingDelete, setPendingDelete] = useState<CytivaDayEntry | null>(null);
   const [session, setSession] = useState<CytivaDaySessionState | null>(null);
   const [advancing, setAdvancing] = useState(false);
+  const [showResetConfirm, setShowResetConfirm] = useState(false);
+  const [resetting, setResetting] = useState(false);
+  const [showFinishConfirm, setShowFinishConfirm] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -119,6 +123,41 @@ export default function CytivaDayDashboard() {
       window.alert((err as Error).message);
     } finally {
       setAdvancing(false);
+    }
+  }
+
+  // Ending the quiz (vs. just moving to the next question) is harder to walk back — every
+  // participant lands on their score page and a new "Start" goes straight to it too, until
+  // someone resets — so this one step needs a deliberate confirmation.
+  function handleAdvanceClick() {
+    if (!session) return;
+    if (session.currentQuestion + 1 === session.totalQuestions) {
+      setShowFinishConfirm(true);
+    } else {
+      handleAdvance();
+    }
+  }
+
+  async function handleFinishConfirmed() {
+    setShowFinishConfirm(false);
+    await handleAdvance();
+  }
+
+  async function handleResetConfirmed() {
+    setResetting(true);
+    try {
+      await resetCytivaDaySession();
+      const data = await getCytivaDaySession();
+      setSession(data);
+      setShowResetConfirm(false);
+    } catch (err) {
+      if (err instanceof ApiError && (err.status === 401 || err.status === 403)) {
+        router.replace('/login');
+        return;
+      }
+      window.alert((err as Error).message);
+    } finally {
+      setResetting(false);
     }
   }
 
@@ -210,12 +249,31 @@ export default function CytivaDayDashboard() {
 
       {tab === 'live' && session && (
         <Card className="p-5 sm:p-6">
-          <div className="mb-4">
-            <p className="text-xs font-semibold uppercase tracking-wide text-gray-500 mb-1">Live Control</p>
-            <h2 className="text-lg font-bold text-gray-900!">
-              {session.completed ? 'Quiz completed' : `Question ${session.currentQuestion + 1} of ${session.totalQuestions}`}
-            </h2>
+          <div className="flex flex-wrap items-start justify-between gap-3 mb-4">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-wide text-gray-500 mb-1">Live Control</p>
+              <h2 className="text-lg font-bold text-gray-900!">
+                {session.currentQuestion < 0
+                  ? 'Waiting room'
+                  : session.completed
+                    ? 'Quiz completed'
+                    : `Question ${session.currentQuestion + 1} of ${session.totalQuestions}`}
+              </h2>
+            </div>
+            <button
+              type="button"
+              className={buttonClasses({ variant: 'secondary', size: 'sm' })}
+              onClick={() => setShowResetConfirm(true)}
+            >
+              Reset Quiz
+            </button>
           </div>
+
+          {session.currentQuestion < 0 && (
+            <p className="text-sm text-gray-500 mb-4">
+              {session.totalParticipants} participant{session.totalParticipants === 1 ? '' : 's'} waiting to start.
+            </p>
+          )}
 
           {!session.completed && session.question && (
             <>
@@ -242,12 +300,16 @@ export default function CytivaDayDashboard() {
           )}
 
           {!session.completed && (
-            <button type="button" className={buttonClasses()} onClick={handleAdvance} disabled={advancing}>
+            <button type="button" className={buttonClasses()} onClick={handleAdvanceClick} disabled={advancing}>
               {advancing
-                ? 'Advancing...'
-                : session.currentQuestion + 1 === session.totalQuestions
-                  ? 'Finish Quiz'
-                  : 'Next Question'}
+                ? session.currentQuestion < 0
+                  ? 'Starting...'
+                  : 'Advancing...'
+                : session.currentQuestion < 0
+                  ? 'Start Quiz'
+                  : session.currentQuestion + 1 === session.totalQuestions
+                    ? 'Finish Quiz'
+                    : 'Next Question'}
             </button>
           )}
         </Card>
@@ -367,6 +429,26 @@ export default function CytivaDayDashboard() {
         confirming={deletingId === pendingDelete?._id}
         onConfirm={confirmDelete}
         onCancel={() => setPendingDelete(null)}
+      />
+
+      <ConfirmDialog
+        open={showResetConfirm}
+        title="Reset quiz"
+        message="This sends everyone back to the waiting room until you click Start Quiz again. It does not delete any participant entries or scores."
+        confirmLabel="Reset"
+        confirming={resetting}
+        onConfirm={handleResetConfirmed}
+        onCancel={() => setShowResetConfirm(false)}
+      />
+
+      <ConfirmDialog
+        open={showFinishConfirm}
+        title="Finish quiz"
+        message="This ends the quiz for everyone right now — every participant is sent to their score page, and anyone new who hits Start will be told the quiz has ended, until you use Reset Quiz."
+        confirmLabel="Finish Quiz"
+        confirming={advancing}
+        onConfirm={handleFinishConfirmed}
+        onCancel={() => setShowFinishConfirm(false)}
       />
     </div>
   );

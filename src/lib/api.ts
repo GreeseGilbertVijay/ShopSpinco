@@ -276,7 +276,9 @@ export interface CytivaDayEntry {
   completedAt?: string;
 }
 
-export async function startCytivaDay(name: string): Promise<{ id: string; currentQuestion: number; completed: boolean }> {
+export async function startCytivaDay(
+  name: string
+): Promise<{ id: string; currentQuestion: number } | { id: string; waiting: true } | { ended: true }> {
   const res = await fetch('/api/cytiva-day/start', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -346,6 +348,16 @@ export async function advanceCytivaDaySession(): Promise<{ currentQuestion: numb
     throw new ApiError('Session expired', { status: res.status });
   }
   if (!res.ok) throw new ApiError(await parseErrorMessage(res, 'Failed to advance the question'), { status: res.status });
+  return res.json();
+}
+
+// Moves the live question back to question 1. Does not delete any participant entries or scores.
+export async function resetCytivaDaySession(): Promise<{ currentQuestion: number }> {
+  const res = await fetch('/api/cytiva-day/session/reset', { method: 'POST' });
+  if (res.status === 401 || res.status === 403) {
+    throw new ApiError('Session expired', { status: res.status });
+  }
+  if (!res.ok) throw new ApiError(await parseErrorMessage(res, 'Failed to reset the quiz session'), { status: res.status });
   return res.json();
 }
 

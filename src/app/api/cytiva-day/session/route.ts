@@ -16,6 +16,20 @@ export async function GET(req: NextRequest) {
     const totalQuestions = CYTIVA_DAY_QUESTIONS.length;
     const completed = session.currentQuestion >= totalQuestions;
 
+    if (session.currentQuestion < 0) {
+      const totalParticipants = await CytivaDayEntry.countDocuments({});
+      return NextResponse.json({
+        currentQuestion: -1,
+        totalQuestions,
+        completed: false,
+        question: null,
+        currentQuestionElapsedSeconds: 0,
+        answeredCount: 0,
+        totalParticipants,
+        optionCounts: [],
+      });
+    }
+
     if (completed) {
       const totalParticipants = await CytivaDayEntry.countDocuments({});
       return NextResponse.json({

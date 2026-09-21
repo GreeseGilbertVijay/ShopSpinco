@@ -5,8 +5,10 @@ import { getOrCreateCytivaDaySession } from '@/models/CytivaDaySession';
 import { CYTIVA_DAY_QUESTIONS } from '@/lib/cytivaDayQuiz';
 import { AuthError, requireSuperAdmin } from '@/lib/auth';
 
-// Admin only: advance the live quiz to the next question, or end it from the last question.
-// This is the "Next Question" / "Finish Quiz" button on the dashboard.
+// Admin only: advance the live quiz by one step — moves it out of the waiting room into
+// question 1, to the next question, or ends it from the last question. This is the
+// "Start Quiz" / "Next Question" / "Finish Quiz" button on the dashboard (same action,
+// currentQuestion just determines what it's currently labeled).
 export async function POST(req: NextRequest) {
   try {
     requireSuperAdmin(req);

@@ -72,6 +72,10 @@ export default function QuestionClient({ pageIndex }: { pageIndex: string }) {
           router.replace(`/cytiva-day/complete?sid=${sid}`);
           return;
         }
+        if (state.currentQuestion < 0) {
+          router.replace(`/cytiva-day/waiting?sid=${sid}`);
+          return;
+        }
         if (state.currentQuestion !== zeroBasedIndex) {
           router.replace(`/cytiva-day/question/${state.currentQuestion + 1}?sid=${sid}`);
           return;
@@ -120,6 +124,10 @@ export default function QuestionClient({ pageIndex }: { pageIndex: string }) {
         .then((state) => {
           if (state.status === 'completed') {
             router.replace(`/cytiva-day/complete?sid=${sid}`);
+            return;
+          }
+          if (state.currentQuestion < 0) {
+            router.replace(`/cytiva-day/waiting?sid=${sid}`);
             return;
           }
           if (state.currentQuestion !== zeroBasedIndex) {

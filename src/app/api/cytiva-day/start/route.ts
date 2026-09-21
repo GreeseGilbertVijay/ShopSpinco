@@ -5,7 +5,10 @@ import { getOrCreateCytivaDaySession } from '@/models/CytivaDaySession';
 import { CYTIVA_DAY_QUESTIONS } from '@/lib/cytivaDayQuiz';
 
 // Public: start a new Cytiva Day quiz attempt. The quiz is host-controlled and live —
-// a new participant joins wherever the group currently is, not necessarily question 1.
+// a new participant either joins the waiting room (if the host hasn't started yet) or
+// wherever the group currently is. If the host has already ended it, no entry is created
+// (this used to leave a 0-score "completed" entry behind for every latecomer and route
+// them into the results page as if they'd played).
 export async function POST(req: NextRequest) {
   const { name } = await req.json();
 
@@ -14,20 +17,20 @@ export async function POST(req: NextRequest) {
   }
 
   await connectDB();
-  const [entry, session] = await Promise.all([
-    CytivaDayEntry.create({ name: name.trim() }),
-    getOrCreateCytivaDaySession(),
-  ]);
+  const session = await getOrCreateCytivaDaySession();
 
-  const completed = session.currentQuestion >= CYTIVA_DAY_QUESTIONS.length;
-  if (completed) {
-    entry.status = 'completed';
-    entry.completedAt = new Date();
-    await entry.save();
+  if (session.currentQuestion >= CYTIVA_DAY_QUESTIONS.length) {
+    return NextResponse.json({ ended: true });
+  }
+
+  const entry = await CytivaDayEntry.create({ name: name.trim() });
+
+  if (session.currentQuestion < 0) {
+    return NextResponse.json({ id: entry._id.toString(), waiting: true }, { status: 201 });
   }
 
   return NextResponse.json(
-    { id: entry._id.toString(), currentQuestion: session.currentQuestion, completed },
+    { id: entry._id.toString(), currentQuestion: session.currentQuestion },
     { status: 201 }
   );
 }
