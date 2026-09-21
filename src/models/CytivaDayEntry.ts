@@ -13,8 +13,6 @@ export interface CytivaDayAnswer {
 export interface ICytivaDayEntry extends Document {
   name: string;
   status: CytivaDayStatus;
-  currentQuestion: number;
-  currentQuestionStartedAt: Date;
   answers: CytivaDayAnswer[];
   totalScore: number;
   totalTimeSeconds: number;
@@ -39,8 +37,6 @@ const cytivaDayEntrySchema = new Schema<ICytivaDayEntry>(
   {
     name: { type: String, required: true, trim: true },
     status: { type: String, enum: ['in-progress', 'completed'], default: 'in-progress' },
-    currentQuestion: { type: Number, default: 0 },
-    currentQuestionStartedAt: { type: Date, default: Date.now },
     answers: { type: [answerSchema], default: [] },
     totalScore: { type: Number, default: 0 },
     totalTimeSeconds: { type: Number, default: 0 },

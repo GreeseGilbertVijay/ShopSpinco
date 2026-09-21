@@ -269,7 +269,6 @@ export interface CytivaDayEntry {
   _id: string;
   name: string;
   status: 'in-progress' | 'completed';
-  currentQuestion: number;
   answers: CytivaDayAnswer[];
   totalScore: number;
   totalTimeSeconds: number;
@@ -277,7 +276,7 @@ export interface CytivaDayEntry {
   completedAt?: string;
 }
 
-export async function startCytivaDay(name: string): Promise<{ id: string; question: CytivaDayQuestionView }> {
+export async function startCytivaDay(name: string): Promise<{ id: string; currentQuestion: number; completed: boolean }> {
   const res = await fetch('/api/cytiva-day/start', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -296,6 +295,9 @@ export async function getCytivaDayEntryState(id: string): Promise<{
   totalQuestions: number;
   marksPerQuestion: number;
   question: CytivaDayQuestionView | null;
+  waiting: boolean;
+  answeredCount?: number;
+  totalParticipants?: number;
 }> {
   const res = await fetch(`/api/cytiva-day/${id}`);
   if (!res.ok) throw new ApiError(await parseErrorMessage(res, 'Failed to load quiz progress'), { status: res.status });
@@ -305,7 +307,7 @@ export async function getCytivaDayEntryState(id: string): Promise<{
 export async function submitCytivaDayAnswer(
   id: string,
   payload: { questionIndex: number; selectedOption: number | null }
-): Promise<{ completed: boolean; nextQuestion: CytivaDayQuestionView | null; totalScore?: number; currentQuestion?: number; question?: CytivaDayQuestionView | null }> {
+): Promise<{ waiting?: boolean; completed?: boolean; currentQuestion?: number; question?: CytivaDayQuestionView | null }> {
   const res = await fetch(`/api/cytiva-day/${id}/answer`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -316,6 +318,35 @@ export async function submitCytivaDayAnswer(
     throw new ApiError(data.message || 'Failed to submit answer', { status: res.status });
   }
   return data;
+}
+
+export interface CytivaDaySessionState {
+  currentQuestion: number;
+  totalQuestions: number;
+  completed: boolean;
+  question: { index: number; total: number; question: string; options: string[]; correctIndex: number } | null;
+  currentQuestionElapsedSeconds: number;
+  answeredCount: number;
+  totalParticipants: number;
+  optionCounts: number[];
+}
+
+export async function getCytivaDaySession(): Promise<CytivaDaySessionState> {
+  const res = await fetch('/api/cytiva-day/session');
+  if (res.status === 401 || res.status === 403) {
+    throw new ApiError('Session expired', { status: res.status });
+  }
+  if (!res.ok) throw new ApiError('Failed to load quiz session', { status: res.status });
+  return res.json();
+}
+
+export async function advanceCytivaDaySession(): Promise<{ currentQuestion: number; completed: boolean }> {
+  const res = await fetch('/api/cytiva-day/session/next', { method: 'POST' });
+  if (res.status === 401 || res.status === 403) {
+    throw new ApiError('Session expired', { status: res.status });
+  }
+  if (!res.ok) throw new ApiError(await parseErrorMessage(res, 'Failed to advance the question'), { status: res.status });
+  return res.json();
 }
 
 export async function getCytivaDayEntries(): Promise<{ entries: CytivaDayEntry[]; totalQuestions: number }> {

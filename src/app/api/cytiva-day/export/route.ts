@@ -34,7 +34,7 @@ export async function GET(req: NextRequest) {
       submissionsSheet.addRow({
         name: entry.name,
         status: entry.status === 'completed' ? 'Completed' : 'In progress',
-        progress: `${entry.status === 'completed' ? CYTIVA_DAY_QUESTIONS.length : entry.currentQuestion} / ${CYTIVA_DAY_QUESTIONS.length}`,
+        progress: `${entry.status === 'completed' ? CYTIVA_DAY_QUESTIONS.length : entry.answers.length} / ${CYTIVA_DAY_QUESTIONS.length}`,
         score: entry.totalScore,
         time: entry.totalTimeSeconds,
         started: entry.startedAt.toLocaleString(),

@@ -1,36 +1,47 @@
 import { NextResponse, type NextRequest } from 'next/server';
 import connectDB from '@/lib/db';
 import CytivaDayEntry from '@/models/CytivaDayEntry';
+import { getOrCreateCytivaDaySession } from '@/models/CytivaDaySession';
 import { CYTIVA_DAY_QUESTIONS, MARKS_PER_QUESTION, sanitizeQuestion } from '@/lib/cytivaDayQuiz';
 
 interface RouteContext {
   params: Promise<{ id: string }>;
 }
 
-// Public: submit an answer for the current question and advance the attempt
+// Public: record an answer for the live (host-controlled) question. The participant does not
+// advance on their own — they wait until the host moves everyone to the next question.
 export async function POST(req: NextRequest, { params }: RouteContext) {
   const { id } = await params;
   const { questionIndex, selectedOption } = await req.json();
 
   await connectDB();
-  const entry = await CytivaDayEntry.findById(id).catch(() => null);
+  const [entry, session] = await Promise.all([
+    CytivaDayEntry.findById(id).catch(() => null),
+    getOrCreateCytivaDaySession(),
+  ]);
   if (!entry) return NextResponse.json({ message: 'Entry not found' }, { status: 404 });
 
-  if (entry.status === 'completed') {
-    return NextResponse.json({ completed: true, nextQuestion: null, totalScore: entry.totalScore });
+  const totalQuestions = CYTIVA_DAY_QUESTIONS.length;
+  if (session.currentQuestion >= totalQuestions) {
+    return NextResponse.json({ completed: true, currentQuestion: session.currentQuestion });
   }
 
-  // Reject stale/out-of-order submissions (e.g. a back button or replayed request)
-  // and hand the client the state it should actually be on.
-  if (questionIndex !== entry.currentQuestion) {
+  // Reject stale/out-of-order submissions (e.g. the host already moved on) and hand the
+  // client the question it should actually be on.
+  if (questionIndex !== session.currentQuestion) {
     return NextResponse.json(
       {
         message: 'Question mismatch',
-        currentQuestion: entry.currentQuestion,
-        question: sanitizeQuestion(entry.currentQuestion),
+        currentQuestion: session.currentQuestion,
+        question: sanitizeQuestion(session.currentQuestion),
       },
       { status: 409 }
     );
+  }
+
+  const alreadyAnswered = entry.answers.some((a) => a.question === session.currentQuestion);
+  if (alreadyAnswered) {
+    return NextResponse.json({ waiting: true, currentQuestion: session.currentQuestion });
   }
 
   const question = CYTIVA_DAY_QUESTIONS[questionIndex];
@@ -41,9 +52,9 @@ export async function POST(req: NextRequest, { params }: RouteContext) {
   const normalizedSelection = typeof selectedOption === 'number' ? selectedOption : null;
   const correct = normalizedSelection !== null && normalizedSelection === question.correctIndex;
   const marks = correct ? MARKS_PER_QUESTION : 0;
-  // Timed server-side from when this question actually became current, so a page
-  // refresh (which restarts the on-screen stopwatch) can't be used to under-report time.
-  const safeTime = Math.max(Math.floor((Date.now() - entry.currentQuestionStartedAt.getTime()) / 1000), 0);
+  // Timed server-side from when this question actually went live, so a page refresh
+  // (which restarts the on-screen stopwatch) can't be used to under-report time.
+  const safeTime = Math.max(Math.floor((Date.now() - session.currentQuestionStartedAt.getTime()) / 1000), 0);
 
   entry.answers.push({
     question: questionIndex,
@@ -54,21 +65,7 @@ export async function POST(req: NextRequest, { params }: RouteContext) {
   });
   entry.totalScore += marks;
   entry.totalTimeSeconds += safeTime;
-  entry.currentQuestion += 1;
-
-  const completed = entry.currentQuestion >= CYTIVA_DAY_QUESTIONS.length;
-  if (completed) {
-    entry.status = 'completed';
-    entry.completedAt = new Date();
-  } else {
-    entry.currentQuestionStartedAt = new Date();
-  }
-
   await entry.save();
 
-  return NextResponse.json({
-    completed,
-    nextQuestion: completed ? null : sanitizeQuestion(entry.currentQuestion),
-    totalScore: completed ? entry.totalScore : undefined,
-  });
+  return NextResponse.json({ waiting: true, currentQuestion: session.currentQuestion });
 }

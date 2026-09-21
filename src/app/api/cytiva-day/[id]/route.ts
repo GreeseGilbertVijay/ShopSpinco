@@ -1,6 +1,7 @@
 import { NextResponse, type NextRequest } from 'next/server';
 import connectDB from '@/lib/db';
 import CytivaDayEntry from '@/models/CytivaDayEntry';
+import { getOrCreateCytivaDaySession } from '@/models/CytivaDaySession';
 import { CYTIVA_DAY_QUESTIONS, MARKS_PER_QUESTION, sanitizeQuestion } from '@/lib/cytivaDayQuiz';
 import { AuthError, requireSuperAdmin } from '@/lib/auth';
 
@@ -8,7 +9,7 @@ interface RouteContext {
   params: Promise<{ id: string }>;
 }
 
-// Public: resync quiz state (used on question page load / refresh)
+// Public: resync quiz state (used on question page load / refresh and while waiting for the host)
 export async function GET(_req: NextRequest, { params }: RouteContext) {
   const { id } = await params;
   await connectDB();
@@ -16,20 +17,59 @@ export async function GET(_req: NextRequest, { params }: RouteContext) {
   const entry = await CytivaDayEntry.findById(id).catch(() => null);
   if (!entry) return NextResponse.json({ message: 'Entry not found' }, { status: 404 });
 
-  const currentQuestionElapsedSeconds =
-    entry.status === 'in-progress'
-      ? Math.max(Math.floor((Date.now() - entry.currentQuestionStartedAt.getTime()) / 1000), 0)
-      : 0;
+  const session = await getOrCreateCytivaDaySession();
+  const totalQuestions = CYTIVA_DAY_QUESTIONS.length;
+  const globallyCompleted = session.currentQuestion >= totalQuestions;
+
+  // The host ending the quiz is a single global event — reconcile stragglers who hadn't
+  // been marked completed yet (e.g. they were mid-question when the host finished).
+  if (globallyCompleted && entry.status !== 'completed') {
+    entry.status = 'completed';
+    entry.completedAt = new Date();
+    await entry.save();
+  }
+
+  if (globallyCompleted) {
+    return NextResponse.json({
+      name: entry.name,
+      status: 'completed',
+      currentQuestion: session.currentQuestion,
+      currentQuestionElapsedSeconds: 0,
+      totalScore: entry.totalScore,
+      totalQuestions,
+      marksPerQuestion: MARKS_PER_QUESTION,
+      question: null,
+      waiting: false,
+    });
+  }
+
+  const hasAnsweredCurrent = entry.answers.some((a) => a.question === session.currentQuestion);
+  const currentQuestionElapsedSeconds = Math.max(
+    Math.floor((Date.now() - session.currentQuestionStartedAt.getTime()) / 1000),
+    0
+  );
+
+  let answeredCount: number | undefined;
+  let totalParticipants: number | undefined;
+  if (hasAnsweredCurrent) {
+    [answeredCount, totalParticipants] = await Promise.all([
+      CytivaDayEntry.countDocuments({ answers: { $elemMatch: { question: session.currentQuestion } } }),
+      CytivaDayEntry.countDocuments({}),
+    ]);
+  }
 
   return NextResponse.json({
     name: entry.name,
-    status: entry.status,
-    currentQuestion: entry.currentQuestion,
+    status: 'in-progress',
+    currentQuestion: session.currentQuestion,
     currentQuestionElapsedSeconds,
     totalScore: entry.totalScore,
-    totalQuestions: CYTIVA_DAY_QUESTIONS.length,
+    totalQuestions,
     marksPerQuestion: MARKS_PER_QUESTION,
-    question: entry.status === 'in-progress' ? sanitizeQuestion(entry.currentQuestion) : null,
+    question: sanitizeQuestion(session.currentQuestion),
+    waiting: hasAnsweredCurrent,
+    answeredCount,
+    totalParticipants,
   });
 }
 

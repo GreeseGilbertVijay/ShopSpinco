@@ -7,18 +7,23 @@ import {
   getCytivaDayEntries,
   deleteCytivaDayEntry,
   exportCytivaDayEntries,
+  getCytivaDaySession,
+  advanceCytivaDaySession,
   ApiError,
   type CytivaDayEntry,
+  type CytivaDaySessionState,
 } from '@/lib/api';
 import { TableContainer, Table, Thead, Th, Tr, Td } from '@/components/ui/Table';
 import EmptyState from '@/components/ui/EmptyState';
 import { SkeletonBlock } from '@/components/ui/Skeleton';
 import Badge from '@/components/ui/Badge';
 import Tabs from '@/components/ui/Tabs';
+import Card from '@/components/ui/Card';
 import { buttonClasses } from '@/components/ui/Button';
 import ConfirmDialog from '@/components/ConfirmDialog';
 
 const POLL_INTERVAL_MS = 5000;
+const SESSION_POLL_INTERVAL_MS = 3000;
 
 function DeleteIcon() {
   return (
@@ -37,10 +42,12 @@ export default function CytivaDayDashboard() {
   const [entries, setEntries] = useState<CytivaDayEntry[]>([]);
   const [totalQuestions, setTotalQuestions] = useState(0);
   const [status, setStatus] = useState<'loading' | 'ready' | 'error'>('loading');
-  const [tab, setTab] = useState<'submissions' | 'leaderboard'>('submissions');
+  const [tab, setTab] = useState<'live' | 'submissions' | 'leaderboard'>('live');
   const [exporting, setExporting] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [pendingDelete, setPendingDelete] = useState<CytivaDayEntry | null>(null);
+  const [session, setSession] = useState<CytivaDaySessionState | null>(null);
+  const [advancing, setAdvancing] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -72,10 +79,54 @@ export default function CytivaDayDashboard() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  useEffect(() => {
+    let cancelled = false;
+
+    function loadSession() {
+      getCytivaDaySession()
+        .then((data) => {
+          if (cancelled) return;
+          setSession(data);
+        })
+        .catch((err) => {
+          if (cancelled) return;
+          if (err instanceof ApiError && (err.status === 401 || err.status === 403)) {
+            router.replace('/login');
+          }
+        });
+    }
+
+    loadSession();
+    const interval = setInterval(loadSession, SESSION_POLL_INTERVAL_MS);
+    return () => {
+      cancelled = true;
+      clearInterval(interval);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  async function handleAdvance() {
+    setAdvancing(true);
+    try {
+      await advanceCytivaDaySession();
+      const data = await getCytivaDaySession();
+      setSession(data);
+    } catch (err) {
+      if (err instanceof ApiError && (err.status === 401 || err.status === 403)) {
+        router.replace('/login');
+        return;
+      }
+      window.alert((err as Error).message);
+    } finally {
+      setAdvancing(false);
+    }
+  }
+
+  // Live standings across everyone still on the quiz, not just those who've finished —
+  // ranked by score so far, tie-broken by time so far.
   const leaderboard = useMemo(
     () =>
       entries
-        .filter((e) => e.status === 'completed')
         .slice()
         .sort((a, b) => b.totalScore - a.totalScore || a.totalTimeSeconds - b.totalTimeSeconds),
     [entries]
@@ -143,19 +194,73 @@ export default function CytivaDayDashboard() {
         active={tab}
         onChange={setTab}
         tabs={[
+          { key: 'live', label: 'Live Control' },
           { key: 'submissions', label: `Submissions (${entries.length})` },
-          { key: 'leaderboard', label: `Leaderboard (${leaderboard.length})` },
+          { key: 'leaderboard', label: `Leaderboard${session && !session.completed ? ' (Live)' : ''} (${leaderboard.length})` },
         ]}
       />
 
-      {status === 'loading' && (
+      {tab === 'live' && !session && (
+        <div className="flex flex-col gap-2">
+          {Array.from({ length: 3 }).map((_, i) => (
+            <SkeletonBlock className="h-10 w-full" key={i} />
+          ))}
+        </div>
+      )}
+
+      {tab === 'live' && session && (
+        <Card className="p-5 sm:p-6">
+          <div className="mb-4">
+            <p className="text-xs font-semibold uppercase tracking-wide text-gray-500 mb-1">Live Control</p>
+            <h2 className="text-lg font-bold text-gray-900!">
+              {session.completed ? 'Quiz completed' : `Question ${session.currentQuestion + 1} of ${session.totalQuestions}`}
+            </h2>
+          </div>
+
+          {!session.completed && session.question && (
+            <>
+              <p className="whitespace-pre-line text-sm text-gray-700 mb-4">{session.question.question}</p>
+              <div className="flex flex-col gap-2 mb-4">
+                {session.question.options.map((option, i) => (
+                  <div
+                    key={i}
+                    className={`flex items-center justify-between gap-3 px-3 py-2 rounded-lg border text-sm ${
+                      i === session.question!.correctIndex ? 'border-success bg-success-subtle' : 'border-gray-200'
+                    }`}
+                  >
+                    <span className={i === session.question!.correctIndex ? 'font-medium text-success' : 'text-gray-700'}>
+                      {option}
+                    </span>
+                    <span className="font-semibold tabular-nums text-gray-500">{session.optionCounts[i] ?? 0}</span>
+                  </div>
+                ))}
+              </div>
+              <p className="text-sm text-gray-500 mb-4">
+                {session.answeredCount} / {session.totalParticipants} participants answered
+              </p>
+            </>
+          )}
+
+          {!session.completed && (
+            <button type="button" className={buttonClasses()} onClick={handleAdvance} disabled={advancing}>
+              {advancing
+                ? 'Advancing...'
+                : session.currentQuestion + 1 === session.totalQuestions
+                  ? 'Finish Quiz'
+                  : 'Next Question'}
+            </button>
+          )}
+        </Card>
+      )}
+
+      {status === 'loading' && tab !== 'live' && (
         <div className="flex flex-col gap-2">
           {Array.from({ length: 5 }).map((_, i) => (
             <SkeletonBlock className="h-10 w-full" key={i} />
           ))}
         </div>
       )}
-      {status === 'error' && <EmptyState title="Could not load quiz data" description="Please try again shortly." />}
+      {status === 'error' && tab !== 'live' && <EmptyState title="Could not load quiz data" description="Please try again shortly." />}
 
       {status === 'ready' && tab === 'submissions' && entries.length === 0 && (
         <EmptyState title="No one has started the quiz yet" description="Names will show up here as soon as participants hit Start." />
@@ -183,7 +288,7 @@ export default function CytivaDayDashboard() {
                   <Td>
                     {entry.status === 'completed'
                       ? `${totalQuestions} / ${totalQuestions}`
-                      : `${entry.currentQuestion} / ${totalQuestions}`}
+                      : `${entry.answers.length} / ${totalQuestions}`}
                   </Td>
                   <Td>{entry.totalScore}</Td>
                   <Td>{entry.totalTimeSeconds}s</Td>
@@ -209,7 +314,7 @@ export default function CytivaDayDashboard() {
       )}
 
       {status === 'ready' && tab === 'leaderboard' && leaderboard.length === 0 && (
-        <EmptyState title="No completed attempts yet" description="The leaderboard fills in as participants finish all the questions." />
+        <EmptyState title="No one has started the quiz yet" description="Rankings update live here as participants answer each question." />
       )}
 
       {status === 'ready' && tab === 'leaderboard' && leaderboard.length > 0 && (
@@ -217,7 +322,7 @@ export default function CytivaDayDashboard() {
           <Table>
             <Thead>
               <tr>
-                {['Rank', 'Name', 'Score', 'Time Taken', 'Completed', 'Actions'].map((h) => (
+                {['Rank', 'Name', 'Status', 'Score', 'Time Taken', 'Completed', 'Actions'].map((h) => (
                   <Th key={h}>{h}</Th>
                 ))}
               </tr>
@@ -227,6 +332,11 @@ export default function CytivaDayDashboard() {
                 <Tr key={entry._id}>
                   <Td className="font-semibold text-gray-900">{i + 1}</Td>
                   <Td className="font-medium text-gray-900">{entry.name}</Td>
+                  <Td>
+                    <Badge tone={entry.status === 'completed' ? 'success' : 'accent'}>
+                      {entry.status === 'completed' ? 'Completed' : `Q${entry.answers.length}/${totalQuestions}`}
+                    </Badge>
+                  </Td>
                   <Td>{entry.totalScore}</Td>
                   <Td>{entry.totalTimeSeconds}s</Td>
                   <Td>{entry.completedAt ? new Date(entry.completedAt).toLocaleString() : '—'}</Td>

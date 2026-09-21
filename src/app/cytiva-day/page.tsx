@@ -18,9 +18,13 @@ export default function CytivaDayStartPage() {
     setSubmitting(true);
     setError('');
     try {
-      const { id } = await startCytivaDay(name.trim());
+      const { id, currentQuestion, completed } = await startCytivaDay(name.trim());
       sessionStorage.setItem('cytivaDayId', id);
-      router.push(`/cytiva-day/question/1?sid=${id}`);
+      if (completed) {
+        router.push(`/cytiva-day/complete?sid=${id}`);
+      } else {
+        router.push(`/cytiva-day/question/${currentQuestion + 1}?sid=${id}`);
+      }
     } catch (err) {
       setError(err instanceof ApiError ? err.message : 'Failed to start the quiz. Please try again.');
       setSubmitting(false);
