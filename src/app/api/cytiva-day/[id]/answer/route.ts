@@ -52,9 +52,15 @@ export async function POST(req: NextRequest, { params }: RouteContext) {
   const normalizedSelection = typeof selectedOption === 'number' ? selectedOption : null;
   const correct = normalizedSelection !== null && normalizedSelection === question.correctIndex;
   const marks = correct ? MARKS_PER_QUESTION : 0;
-  // Timed server-side from when this question actually went live, so a page refresh
-  // (which restarts the on-screen stopwatch) can't be used to under-report time.
-  const safeTime = Math.max(Math.floor((Date.now() - session.currentQuestionStartedAt.getTime()) / 1000), 0);
+  // Timed server-side from when THIS participant's client actually loaded the question
+  // (stamped on GET), not from whenever the host advanced it globally — a slow page load
+  // shouldn't inflate their answer time. Falls back to the global timestamp for the rare
+  // case a submit arrives without ever having resynced first.
+  const seenAt =
+    entry.currentQuestionSeenFor === session.currentQuestion && entry.currentQuestionSeenAt
+      ? entry.currentQuestionSeenAt
+      : session.currentQuestionStartedAt;
+  const safeTime = Math.max(Math.floor((Date.now() - seenAt.getTime()) / 1000), 0);
 
   entry.answers.push({
     question: questionIndex,

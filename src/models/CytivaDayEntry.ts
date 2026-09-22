@@ -16,6 +16,11 @@ export interface ICytivaDayEntry extends Document {
   answers: CytivaDayAnswer[];
   totalScore: number;
   totalTimeSeconds: number;
+  // Which live question index currentQuestionSeenAt was stamped for, and when this
+  // participant's own client actually loaded it — not when the host advanced the
+  // question globally, so a slow page load doesn't eat into their answer time.
+  currentQuestionSeenFor: number | null;
+  currentQuestionSeenAt: Date | null;
   startedAt: Date;
   completedAt?: Date;
   createdAt: Date;
@@ -40,6 +45,8 @@ const cytivaDayEntrySchema = new Schema<ICytivaDayEntry>(
     answers: { type: [answerSchema], default: [] },
     totalScore: { type: Number, default: 0 },
     totalTimeSeconds: { type: Number, default: 0 },
+    currentQuestionSeenFor: { type: Number, default: null },
+    currentQuestionSeenAt: { type: Date, default: null },
     startedAt: { type: Date, default: Date.now },
     completedAt: { type: Date },
   },

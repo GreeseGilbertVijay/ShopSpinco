@@ -60,10 +60,22 @@ export async function GET(_req: NextRequest, { params }: RouteContext) {
   }
 
   const hasAnsweredCurrent = entry.answers.some((a) => a.question === session.currentQuestion);
-  const currentQuestionElapsedSeconds = Math.max(
-    Math.floor((Date.now() - session.currentQuestionStartedAt.getTime()) / 1000),
-    0
-  );
+
+  // Stamp the moment THIS participant's client actually reached the current question,
+  // the first time we see them here for it — so their timer (and later their scored
+  // answer time) starts from their own page load, not from whenever the host clicked
+  // "Next Question" globally. A slow connection shouldn't cost them answer time.
+  if (!hasAnsweredCurrent && entry.currentQuestionSeenFor !== session.currentQuestion) {
+    entry.currentQuestionSeenFor = session.currentQuestion;
+    entry.currentQuestionSeenAt = new Date();
+    await entry.save();
+  }
+
+  const seenAt =
+    entry.currentQuestionSeenFor === session.currentQuestion && entry.currentQuestionSeenAt
+      ? entry.currentQuestionSeenAt
+      : session.currentQuestionStartedAt;
+  const currentQuestionElapsedSeconds = Math.max(Math.floor((Date.now() - seenAt.getTime()) / 1000), 0);
 
   let answeredCount: number | undefined;
   let totalParticipants: number | undefined;
