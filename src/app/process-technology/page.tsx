@@ -84,9 +84,9 @@ const services = [
       'Standardized Freeze Dryer for Diagnostics',
     ],
     logos: [
-      { file: 'SP Logo Spincotech.png' },
-      { file: 'biopharma Group Logo Spincotech.png' },
-      { file: 'Tempris Logo Spincotech.png' },
+      { file: 'SP Logo Spincotech.png', href: 'https://spincotech.com/partners/sp/' },
+      { file: 'biopharma Group Logo Spincotech.png', href: 'https://spincotech.com/partners/biopharma-group/' },
+      { file: 'Tempris Logo Spincotech.png', href: 'https://spincotech.com/partners/tempris/' },
     ],
   },
   {
@@ -105,7 +105,7 @@ const services = [
       'Sterility Test Isolators',
       'Sterile Transfer Systems',
     ],
-    logos: [{ file: 'Getinge Logo Spincotech.png' }],
+    logos: [{ file: 'Getinge Logo Spincotech.png', href: 'https://spincotech.com/partners/getinge/' }],
   },
   {
     number: '03',
@@ -122,9 +122,9 @@ const services = [
       'Advanced Crystallization Studies in API and Injectables',
     ],
     logos: [
-      { file: 'Kinematica Logo Spincotech.png' },
-      { file: 'psl Logo Spincotech.png' },
-      { file: 'Technobis Logo Spincotech.png' },
+      { file: 'Kinematica Logo Spincotech.png', href: 'https://spincotech.com/partners/kinematica/' },
+      { file: 'psl Logo Spincotech.png', href: 'https://spincotech.com/partners/psl/' },
+      { file: 'Technobis Logo Spincotech.png', href: 'https://spincotech.com/partners/technobis/' },
     ],
   },
   {
@@ -157,9 +157,9 @@ const services = [
       'Online Moisture and water content for API manufacturing.',
     ],
     logos: [
-      { file: 'Liebherr Logo Spincotech.png' },
-      { file: 'tec5 Logo Spincotech.png' },
-      { file: 'Spectral Engines Spincotech.png' },
+      { file: 'Liebherr Logo Spincotech.png', href: 'https://spincotech.com/partners/liebherr/'  },
+      { file: 'tec5 Logo Spincotech.png', href: 'https://spincotech.com/partners/tec5/' },
+      { file: 'Spectral Engines Spincotech.png', href: 'https://spincotech.com/partners/spectral-engines/' },
     ],
   },
 ];
