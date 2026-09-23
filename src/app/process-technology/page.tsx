@@ -1,6 +1,5 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import RotatingCircle from '@/components/RotatingCircle';
 import Avatar from '@/components/Avatar';
 import StackedServiceCards from '@/components/StackedServiceCards';
 import TrustedByFan from '@/components/TrustedByFan';
@@ -11,26 +10,10 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
 };
 
-type WorkTile = {
-  label: string;
-  sub: string;
-  gradient: string;
-  icon: React.ReactNode;
-};
-
 function SnowflakeIcon() {
   return (
     <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
       <path d="M12 2v20M4.5 6.5l15 11M19.5 6.5l-15 11M12 2l-2 2M12 2l2 2M12 22l-2-2M12 22l2-2" />
-    </svg>
-  );
-}
-function GaugeIcon() {
-  return (
-    <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <path d="M4 15a8 8 0 1 1 16 0" />
-      <path d="M12 15l4-5" />
-      <circle cx="12" cy="15" r="1" fill="currentColor" stroke="none" />
     </svg>
   );
 }
@@ -41,14 +24,6 @@ function ThermometerIcon() {
     </svg>
   );
 }
-function BoxIcon() {
-  return (
-    <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <path d="M21 8 12 3 3 8l9 5 9-5Z" />
-      <path d="M3 8v8l9 5 9-5V8M12 13v8" />
-    </svg>
-  );
-}
 function SlidersIcon() {
   return (
     <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -56,16 +31,6 @@ function SlidersIcon() {
       <circle cx="16" cy="6" r="2" />
       <circle cx="10" cy="12" r="2" />
       <circle cx="16" cy="18" r="2" />
-    </svg>
-  );
-}
-function PackageIcon() {
-  return (
-    <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <rect x="3" y="7" width="18" height="13" rx="1.5" />
-      <path d="M3 11h18M10 7V4h4v3" />
-      <circle cx="7" cy="14.5" r="1" fill="currentColor" stroke="none" />
-      <circle cx="11" cy="14.5" r="1" fill="currentColor" stroke="none" />
     </svg>
   );
 }
@@ -91,68 +56,6 @@ const capabilities: Capability[] = [
   { label: 'Quality & Lab Testing', icon: <MicroscopeIcon /> },
 ];
 
-const workTiles: WorkTile[] = [
-  { label: 'Lab QC', sub: 'Quality', gradient: 'from-sky-500 to-sky-700', icon: <MicroscopeIcon /> },
-  { label: 'Vacuum Chamber', sub: 'Equipment', gradient: 'from-indigo-500 to-indigo-700', icon: <SnowflakeIcon /> },
-  { label: 'IQF Tunnel', sub: 'Process Line', gradient: 'from-accent to-accent-hover', icon: <ThermometerIcon /> },
-  { label: 'Blast Freezer', sub: 'Cold Chain', gradient: 'from-emerald-500 to-emerald-700', icon: <GaugeIcon /> },
-  { label: 'Control Panel', sub: 'Automation', gradient: 'from-fuchsia-500 to-fuchsia-700', icon: <SlidersIcon /> },
-  { label: 'Packaging Cell', sub: 'Line Design', gradient: 'from-amber-500 to-amber-700', icon: <PackageIcon /> },
-
-
-  
-];
-
-const CARD_SIZE = 200;
-const CARD_GAP = 72;
-// radius that keeps adjacent card edges CARD_GAP apart along the ring
-const CIRCLE_RADIUS = Math.round((CARD_SIZE + CARD_GAP) / (2 * Math.sin(Math.PI / workTiles.length)));
-// a square hugging the tile ring (worst-case rotated-card corner reach) plus a
-// small buffer, used as the hover/zoom trigger zone so only getting close to
-// the tiles themselves (not the whole empty section) shrinks the circle
-const TILE_HOVER_PADDING = 10;
-const HOVER_ZONE_SIZE = Math.round(2 * (CIRCLE_RADIUS + CARD_SIZE / Math.SQRT2) + TILE_HOVER_PADDING * 2);
-
-function getCirclePosition(index: number, total: number) {
-  const angle = (360 / total) * index - 120;
-  const radians = (angle * Math.PI) / 180;
-  return { angle, x: Math.round(Math.cos(radians) * CIRCLE_RADIUS), y: Math.round(Math.sin(radians) * CIRCLE_RADIUS) };
-}
-
-function WorkTileCard({ tile, index }: { tile: WorkTile; index: number }) {
-  const { x, y, angle } = getCirclePosition(index, workTiles.length);
-  // tilt each card so its bottom edge (where the label sits) faces the shared
-  // center, as if gravity were pulling it toward the "Our Work" hub
-  const rotation = Math.round(angle + 90);
-  const normalized = ((rotation % 360) + 360) % 360;
-  // on the lower half of the ring that tilt leaves labels upside-down, so
-  // flip just the content in place (not the whole card) to keep it readable
-  // while staying anchored to the same bottom edge as every other card
-  const flipContent = normalized > 90 && normalized < 270;
-
-  return (
-    <div
-      className={`hidden lg:flex absolute top-1/2 left-1/2 flex-col items-center justify-end text-center gap-2 rounded-2xl p-4 bg-gradient-to-br ${tile.gradient} text-white shadow-lifted cursor-pointer`}
-      style={{
-        width: CARD_SIZE,
-        height: CARD_SIZE,
-        transform: `translate(-50%, -50%) translate(${x}px, ${y}px) rotate(${rotation}deg)`,
-      }}
-    >
-      <div
-        className="flex flex-col items-center gap-2"
-        style={flipContent ? { transform: 'rotate(180deg)' } : undefined}
-      >
-        <span className="opacity-90">{tile.icon}</span>
-        <div>
-          <p className="text-sm font-semibold leading-tight">{tile.label}</p>
-          <p className="text-[11px] opacity-75">{tile.sub}</p>
-        </div>
-      </div>
-    </div>
-  );
-}
-
 function Stars() {
   return (
     <div className="flex gap-0.5 text-accent">
@@ -168,43 +71,96 @@ function Stars() {
 const services = [
   {
     number: '01',
-    bg: 'bg-indigo-900',
+    bg: 'bg-gradient-to-br from-blue-50 via-indigo-50 to-white',
+    badge: 'bg-indigo-100 text-indigo-700',
+    glow: 'bg-indigo-200',
+    dot: 'bg-indigo-500',
     title: 'Freeze-Drying',
     description:
       "ATS Global is the Independent Solution Provider for Smart Digital Transformation. We are a passionate automation, quality and IT enterprise delivering tangible business value to our customers world-wide. Established in 1986, ATS Global continues its journey on the path to digital transformation.",
-    tiles: ['Cycle A', 'Cycle B', 'QC Log'],
+    highlights: [
+      'GMP Freeze Dryer for Injectables Manufacturing',
+      'GMP Freeze Dryer for Biopharma Drug Intermediates, Peptides and Oligos',
+      'Standardized Freeze Dryer for Diagnostics',
+    ],
+    logos: [
+      { file: 'SP Logo Spincotech.png' },
+      { file: 'biopharma Group Logo Spincotech.png' },
+      { file: 'Tempris Logo Spincotech.png' },
+    ],
   },
   {
     number: '02',
-    bg: 'bg-slate-800',
+    bg: 'bg-gradient-to-br from-cyan-50 via-slate-50 to-white',
+    badge: 'bg-slate-200 text-slate-700',
+    glow: 'bg-cyan-200',
+    dot: 'bg-cyan-600',
     title: 'Sterilization',
     description:
       "Getinge ISOTEST is an isolator designed for sterility testing of sterile drugs, components, and devices. Continuous workflow, easy access, and fast bio-decontamination help increase productivity.",
-    tiles: ['HMI', 'Alarms', 'Logs'],
+    highlights: [
+      'Component & Decontamination Sterilizers',
+      'Steam-Air Mixture Sterilizer for injectables',
+      'cGMP Custom Designed Washers',
+      'Sterility Test Isolators',
+      'Sterile Transfer Systems',
+    ],
+    logos: [{ file: 'Getinge Logo Spincotech.png' }],
   },
   {
     number: '03',
-    bg: 'bg-red-600',
+    bg: 'bg-gradient-to-br from-rose-50 via-red-50 to-white',
+    badge: 'bg-rose-100 text-rose-700',
+    glow: 'bg-rose-200',
+    dot: 'bg-rose-500',
     title: 'Homogenization',
     description:
       'Ever since our company’s founder, Professor Willems, revolutionized the industry with his rotor / stator invention, Kinematica has continued perfecting the technique by customizing and engineering its solutions to fit the most demanding applications.',
-    tiles: ['Layout', 'Utilities', 'Phasing'],
+    highlights: [
+      'Inline Homogenizer for Microspheres, Wet-milling and Propofol',
+      'Microspheres Processing in Complex Injectables',
+      'Advanced Crystallization Studies in API and Injectables',
+    ],
+    logos: [
+      { file: 'Kinematica Logo Spincotech.png' },
+      { file: 'psl Logo Spincotech.png' },
+      { file: 'Technobis Logo Spincotech.png' },
+    ],
   },
   {
     number: '04',
-    bg: 'bg-amber-900',
+    bg: 'bg-gradient-to-br from-amber-50 via-yellow-50 to-white',
+    badge: 'bg-amber-100 text-amber-800',
+    glow: 'bg-amber-200',
+    dot: 'bg-amber-500',
     title: 'Packaging Inspection pti-ccit',
     description:
       'PTI - Packaging Technologies & Inspection is headquartered in Hawthorne, New York, a Westchester county community close to New York City. PTI is a collective of scientists, engineers and packaging practitioners focused on improving the entire package quality experience throughout the packaging lifecycle.',
-    tiles: ['SOPs', 'Batch Rec.', 'Validation'],
+    highlights: [
+      'At-line and Automated O2 & Pressure Headspace Inspection for Parenteral',
+      'Inline CO2 Measurement for Media Fill Inspection and CCIT',
+      'Automated and Online CCI Leak Testing for Parenteral',
+    ],
+    logos: [{ file: 'pti Logo Spincotech.png' }, { file: 'LightHouse Logo Spincotech.png' }],
   },
   {
     number: '05',
-    bg: 'bg-orange-500',
+    bg: 'bg-gradient-to-br from-orange-50 via-amber-50 to-white',
+    badge: 'bg-orange-100 text-orange-700',
+    glow: 'bg-orange-200',
+    dot: 'bg-orange-500',
     title: 'Process Spectroscopy & PAT',
     description:
       'The Liebherr Group is a family-run technology company with a broadly diversified product programme, which includes a total of 13 product segments. tec5 thereby covers the entire technology chain for the development and production of the systems, setting standards in the flexible and rapid adaptation of the devices to meet individual process requirements and customer demands.We specialize in MEMS-based near-infrared spectral measurements and offer digital solutions, including app and cloud platforms, for seamless data processing and analysis.',
-    tiles: ['SOPs', 'Batch Rec.', 'Validation'],
+    highlights: [
+      'Process Spectroscopy for Pharmaceutical manufacturing.',
+      'Online Moisture and water content for API manufacturing.',
+    ],
+    logos: [
+      { file: 'Liebherr Logo Spincotech.png' },
+      { file: 'tec5 Logo Spincotech.png' },
+      { file: 'Spectral Engines Spincotech.png' },
+    ],
   },
 ];
 
@@ -301,10 +257,10 @@ export default function ProcessTechnologyPage() {
 
           <div className="mt-9 flex items-center justify-center gap-3 flex-wrap">
             <a
-              href="#work"
+              href="https://spincotech.com/life-sciences/feedback-form/"
               className="inline-flex items-center gap-2 rounded-full bg-gray-900 text-white text-sm font-semibold px-6 py-3 no-underline transition-all hover:bg-black hover:-translate-y-0.5 hover:shadow-elevated"
             >
-              See our work
+              Feedback Form
               <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                 <path d="M12 5v14M5 12l7 7 7-7" />
               </svg>
@@ -313,7 +269,7 @@ export default function ProcessTechnologyPage() {
               href="https://spincotech.com/contact-us/"
               className="inline-flex items-center gap-2 rounded-full bg-white text-gray-900 text-sm font-semibold px-6 py-3 no-underline border border-gray-200 transition-all hover:border-accent hover:-translate-y-0.5"
             >
-              Talk to an engineer
+              Contact Us
               <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                 <path d="M5 12h14M13 5l7 7-7 7" />
               </svg>
@@ -350,82 +306,11 @@ export default function ProcessTechnologyPage() {
         </div>
       </section>
 
-      {/* See more of our work — circle section */}
-      <section
-        id="work"
-        className="relative overflow-hidden py-24 sm:py-32 px-6 text-white scroll-mt-24 bg-gradient-to-b from-gray-950 via-gray-900 to-gray-950"
-      >
-        <div
-          aria-hidden="true"
-          className="pointer-events-none absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[700px] rounded-full bg-accent/10 blur-3xl"
-        />
-
-        <div className="relative max-w-2xl mx-auto text-center mb-16 sm:mb-20">
-          <p className="uppercase tracking-[0.3em] text-xs text-white/40 mb-4">Our Work</p>
-          <h2 className="text-4xl sm:text-5xl font-bold text-white m-0">
-            Equipment we design, install, and support
-          </h2>
-          <p className="mt-4 text-white/60 text-base sm:text-lg">
-            A closer look at the lines and tooling behind a typical Spinco engagement — from first vacuum test to
-            full production.
-          </p>
-        </div>
-
-        <div className="relative max-w-full">
-          <div className="relative min-h-[420px] sm:min-h-[520px] flex items-center justify-center">
-            <div
-              className="absolute origin-center scale-[0.8] transition-transform duration-500 ease-out hover:scale-[0.65]"
-              style={{
-                width: HOVER_ZONE_SIZE,
-                height: HOVER_ZONE_SIZE,
-                left: `calc(50% - ${HOVER_ZONE_SIZE / 2}px)`,
-                top: `calc(50% - ${HOVER_ZONE_SIZE / 2}px)`,
-              }}
-            >
-              <RotatingCircle className="absolute inset-0">
-                {workTiles.map((tile, i) => (
-                  <WorkTileCard key={tile.label} tile={tile} index={i} />
-                ))}
-              </RotatingCircle>
-            </div>
-
-            <div className="relative z-10 text-center px-4">
-              <Link
-                href="/shop"
-                className="inline-flex items-center gap-2 rounded-full bg-white text-gray-900 text-sm font-semibold px-6 py-3 no-underline shadow-lifted transition-transform hover:-translate-y-0.5"
-              >
-                Explore the archive
-                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                  <path d="M5 12h14M13 5l7 7-7 7" />
-                </svg>
-              </Link>
-            </div>
-          </div>
-
-          {/* mobile fallback grid, since the scattered tiles are desktop-only */}
-          <div className="lg:hidden grid grid-cols-3 gap-3 mt-10">
-            {workTiles.map((tile) => (
-              <div
-                key={tile.label}
-                className={`flex flex-col justify-between rounded-xl p-3 h-24 bg-gradient-to-br ${tile.gradient} text-white shadow-lifted cursor-pointer transition-transform hover:-translate-y-0.5`}
-              >
-                <span className="opacity-90 scale-75 origin-top-left">{tile.icon}</span>
-                <p className="text-[10px] font-semibold leading-tight">{tile.label}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Below section — what we ship */}
+      {/* Categories Section */}
       <section id="services" className="pt-4 px-4 scroll-mt-24">
         <div className="max-w-7xl mx-auto text-left">
-          <p className="uppercase tracking-[0.3em] text-xs text-gray-500 mb-3">What we ship</p>
-          <h2 className="text-4xl sm:text-5xl font-bold text-gray-900! m-0">Our ways to move fast</h2>
-          <p className="mt-4 max-w-2xl text-gray-500 text-base sm:text-lg">
-            Each engagement pairs proven equipment partners with our own controls and validation work — scroll
-            through a few of the disciplines we cover.
-          </p>
+          <p className="uppercase tracking-[0.3em] text-xs text-gray-500 mb-3">Our Solutions</p>
+          <h2 className="text-4xl sm:text-5xl font-bold text-gray-900! m-0">Process Technology</h2>
           <StackedServiceCards services={services} />
         </div>
       </section>
@@ -436,8 +321,6 @@ export default function ProcessTechnologyPage() {
           <div className="mb-24">
             <h2 className="text-5xl sm:text-6xl font-bold leading-[0.95] m-0">
               <span className="text-gray-900!">Trusted by</span>
-              <br />
-              <span className="text-gray-400!">+40 founders</span>
             </h2>
             <p className="mt-6 max-w-xl mx-auto text-gray-500 text-base sm:text-lg">
               Food, biotech, and pharma teams bring us in when a line has to work the first time.

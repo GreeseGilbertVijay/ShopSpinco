@@ -11,9 +11,13 @@ if (typeof window !== 'undefined') {
 export type Service = {
   number: string;
   bg: string;
+  badge: string;
+  glow: string;
+  dot: string;
   title: string;
   description: string;
-  tiles: string[];
+  highlights: string[];
+  logos: { file: string; href?: string }[];
 };
 
 // Depth offsets for the cards waiting behind the active one.
@@ -117,34 +121,64 @@ export default function StackedServiceCards({ services }: { services: Service[] 
           ref={(el) => {
             cardRefs.current[i] = el;
           }}
-          className="absolute top-[42%] left-1/2 w-[min(90vw,900px)]"
+          className="absolute top-[42%] left-1/2 w-[min(95vw,1200px)]"
           style={{ willChange: 'transform', transformOrigin: 'bottom center', zIndex: n - i }}
         >
           <div
-            className={`relative rounded-3xl p-8 sm:p-12 text-white shadow-lifted flex flex-col ${service.bg}`}
+            className={`relative overflow-hidden rounded-[2rem] p-8 sm:p-12 border border-black/5 shadow-lifted flex flex-col ${service.bg}`}
             style={{ minHeight: 480 }}
           >
-            <div className="flex items-start justify-between gap-6 mb-6">
-              <h3 className="text-2xl sm:text-3xl font-bold max-w-xl m-0">{service.title}</h3>
-              <span className="text-sm text-white/50 shrink-0">({service.number})</span>
-            </div>
-            <p className="max-w-2xl text-white/80 leading-relaxed mb-10">{service.description}</p>
+            <div
+              aria-hidden="true"
+              className={`pointer-events-none absolute -top-20 -right-20 w-72 h-72 rounded-full blur-3xl opacity-60 ${service.glow}`}
+            />
+            <div
+              aria-hidden="true"
+              className={`pointer-events-none absolute -bottom-24 -left-16 w-56 h-56 rounded-full blur-3xl opacity-40 ${service.glow}`}
+            />
 
-            <div className="flex justify-end mt-auto">
-              <div className="flex items-end">
-                {service.tiles.map((tileLabel, tileIndex) => (
-                  <div
-                    key={tileLabel}
-                    className="w-20 h-20 sm:w-24 sm:h-24 rounded-xl bg-white/10 border border-white/15 flex items-end p-2 shadow-lifted"
-                    style={{
-                      marginLeft: tileIndex === 0 ? 0 : -28,
-                      transform: `translateY(-${tileIndex * 14}px)`,
-                      zIndex: tileIndex + 1,
-                    }}
-                  >
-                    <span className="text-[10px] font-medium text-white/70 leading-tight">{tileLabel}</span>
-                  </div>
-                ))}
+            <div className="relative flex items-start justify-between gap-6 mb-6">
+              <h3 className="text-2xl sm:text-3xl font-bold max-w-xl m-0 text-gray-900">{service.title}</h3>
+              <span
+                className={`inline-flex items-center justify-center w-11 h-11 rounded-full text-sm font-semibold shrink-0 ${service.badge}`}
+              >
+                {service.number}
+              </span>
+            </div>
+            <p className="relative max-w-2xl text-gray-600 leading-relaxed mb-4">{service.description}</p>
+
+            <ul className="relative flex flex-col gap-2 max-w-2xl mb-10">
+              {service.highlights.map((item) => (
+                <li key={item} className="flex items-start gap-2.5 text-gray-700 text-sm sm:text-base leading-relaxed">
+                  <span className={`mt-2 w-1.5 h-1.5 rounded-full shrink-0 ${service.dot}`} />
+                  {item}
+                </li>
+              ))}
+            </ul>
+
+            <div className="relative flex justify-end mt-auto">
+              <div className="flex items-center gap-4 flex-wrap justify-end">
+                {service.logos.map((logo) => {
+                  const Wrapper = logo.href ? 'a' : 'div';
+                  return (
+                    <Wrapper
+                      key={logo.file}
+                      {...(logo.href ? { href: logo.href, target: '_blank', rel: 'noopener noreferrer' } : {})}
+                      className="group flex flex-col items-center gap-2 cursor-pointer"
+                    >
+                      <div className="w-24 h-16 sm:w-28 sm:h-20 rounded-xl bg-white border border-black/5 flex items-center justify-center p-3 shadow-elevated transition-transform group-hover:-translate-y-0.5">
+                        <img
+                          src={`/Process-Technology/${encodeURIComponent(logo.file)}`}
+                          alt={logo.file.replace(/\.png$/i, '')}
+                          className="max-w-full max-h-full object-contain"
+                        />
+                      </div>
+                      <span
+                        className={`block w-8 h-0.5 rounded-full ${service.dot} opacity-70 transition-opacity group-hover:opacity-100`}
+                      />
+                    </Wrapper>
+                  );
+                })}
               </div>
             </div>
           </div>
