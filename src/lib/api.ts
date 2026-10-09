@@ -162,6 +162,26 @@ export async function resendOtp(email: string) {
   return res.json() as Promise<{ message: string }>;
 }
 
+export async function forgotPassword(email: string) {
+  const res = await fetch('/api/auth/forgot-password', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email }),
+  });
+  if (!res.ok) throw new ApiError(await parseErrorMessage(res, 'Failed to send reset code'), { status: res.status });
+  return res.json() as Promise<{ message: string }>;
+}
+
+export async function resetPassword(email: string, code: string, password: string) {
+  const res = await fetch('/api/auth/reset-password', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email, code, password }),
+  });
+  if (!res.ok) throw new ApiError(await parseErrorMessage(res, 'Failed to reset password'), { status: res.status });
+  return res.json() as Promise<{ message: string }>;
+}
+
 export async function logout() {
   await fetch('/api/auth/logout', { method: 'POST' });
 }

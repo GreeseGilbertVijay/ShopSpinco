@@ -1,0 +1,603 @@
+<!doctype html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Process &amp; Technology · ShopSpinco</title>
+  <meta name="description" content="A look at the freeze-dry process technology and engineering work behind ShopSpinco." />
+  <meta name="robots" content="noindex, nofollow" />
+
+  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3/dist/gsap.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3/dist/ScrollTrigger.min.js"></script>
+
+  <style type="text/tailwindcss">
+    @theme {
+      --color-accent: #f29a4e;
+      --color-accent-hover: #dc8639;
+      --color-accent-subtle: #fdf1e4;
+
+      --shadow-card: 0 1px 2px 0 rgba(16, 24, 40, 0.04), 0 1px 3px 0 rgba(16, 24, 40, 0.06);
+      --shadow-elevated: 0 4px 8px -2px rgba(16, 24, 40, 0.08), 0 10px 20px -4px rgba(16, 24, 40, 0.08);
+      --shadow-lifted: 0 12px 24px -6px rgba(16, 24, 40, 0.16), 0 24px 48px -12px rgba(16, 24, 40, 0.2);
+    }
+    :root {
+      font: 18px/145% system-ui, 'Segoe UI', Roboto, sans-serif;
+      letter-spacing: 0.18px;
+      color: #000;
+      background: #fff;
+      -webkit-font-smoothing: antialiased;
+      @media (max-width: 1024px) {
+        font-size: 16px;
+      }
+    }
+
+    body {
+      margin: 0;
+    }
+
+    .app-shell {
+      width: 1440px;
+      max-width: 100%;
+      margin: 0 auto;
+      text-align: center;
+      min-height: 100svh;
+      display: flex;
+      flex-direction: column;
+      box-sizing: border-box;
+    }
+
+    h1 {
+      letter-spacing: -1.68px;
+    }
+    @keyframes marquee {
+      from { transform: translateX(0); }
+      to { transform: translateX(-50%); }
+    }
+    .animate-marquee {
+      animation: marquee 32s linear infinite;
+    }
+
+    @keyframes card-shake {
+      0%, 100% { transform: translateX(0) rotate(0deg); }
+      10%, 30%, 50%, 70%, 90% { transform: translateX(-4px) rotate(-1.5deg); }
+      20%, 40%, 60%, 80% { transform: translateX(4px) rotate(1.5deg); }
+    }
+    .trusted-card:hover .trusted-card-box {
+      animation: card-shake 0.4s ease-in-out infinite;
+    }
+  </style>
+</head>
+<body>
+  <div class="app-shell">
+    <!-- Hero — heading, pitch, CTAs, capability strip, partner logo slider -->
+    <section class="relative overflow-hidden pt-20 pb-16 sm:pt-28 sm:pb-20 px-6">
+      <div
+        aria-hidden="true"
+        class="pointer-events-none absolute -top-40 left-1/2 -translate-x-1/2 w-[900px] h-[900px] rounded-full bg-accent/10 blur-3xl"
+      ></div>
+
+      <div class="relative max-w-3xl mx-auto text-center">
+        <p class="uppercase tracking-[0.3em] text-xs font-semibold text-accent-hover mb-5">
+          Engineering · Automation · Cold Chain
+        </p>
+        <h1 class="text-5xl sm:text-6xl md:text-7xl font-bold leading-[1.05] text-gray-900 m-0">
+          Process Technology
+        </h1>
+        <p class="mt-6 text-base sm:text-lg text-gray-500 leading-relaxed max-w-xl mx-auto">
+          From vacuum chamber design to line automation, our engineering team builds the freeze-drying,
+          sterilization, and packaging systems that keep your product moving — reliably, and at scale.
+        </p>
+
+        <div class="mt-9 flex items-center justify-center gap-3 flex-wrap">
+          <a
+            href="https://spincotech.com/life-sciences/feedback-form/"
+            class="inline-flex items-center gap-2 rounded-full bg-gray-900 text-white text-sm font-semibold px-6 py-3 no-underline transition-all hover:bg-black hover:-translate-y-0.5 hover:shadow-elevated"
+          >
+            Feedback Form
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M12 5v14M5 12l7 7 7-7" />
+            </svg>
+          </a>
+          <a
+            href="https://spincotech.com/contact-us/"
+            class="inline-flex items-center gap-2 rounded-full bg-white text-gray-900 text-sm font-semibold px-6 py-3 no-underline border border-gray-200 transition-all hover:border-accent hover:-translate-y-0.5"
+          >
+            Contact Us
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M5 12h14M13 5l7 7-7 7" />
+            </svg>
+          </a>
+        </div>
+      </div>
+
+      <div class="relative mt-16 sm:mt-20 max-w-4xl mx-auto grid grid-cols-2 sm:grid-cols-4 gap-4 sm:gap-6">
+        <div class="flex flex-col items-center gap-2 text-center rounded-2xl px-3 py-5 bg-gray-50 border border-gray-100 transition-colors hover:border-accent/40">
+          <span class="text-accent-hover">
+            <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M14 14.76V3.5a2 2 0 0 0-4 0v11.26a4 4 0 1 0 4 0Z" />
+            </svg>
+          </span>
+          <p class="text-xs sm:text-sm font-medium text-gray-700 leading-tight m-0">Precision Thermal Control</p>
+        </div>
+        <div class="flex flex-col items-center gap-2 text-center rounded-2xl px-3 py-5 bg-gray-50 border border-gray-100 transition-colors hover:border-accent/40">
+          <span class="text-accent-hover">
+            <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M4 6h10M18 6h2M4 12h4M12 12h8M4 18h10M18 18h2" />
+              <circle cx="16" cy="6" r="2" />
+              <circle cx="10" cy="12" r="2" />
+              <circle cx="16" cy="18" r="2" />
+            </svg>
+          </span>
+          <p class="text-xs sm:text-sm font-medium text-gray-700 leading-tight m-0">Automation &amp; Controls</p>
+        </div>
+        <div class="flex flex-col items-center gap-2 text-center rounded-2xl px-3 py-5 bg-gray-50 border border-gray-100 transition-colors hover:border-accent/40">
+          <span class="text-accent-hover">
+            <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M12 2v20M4.5 6.5l15 11M19.5 6.5l-15 11M12 2l-2 2M12 2l2 2M12 22l-2-2M12 22l2-2" />
+            </svg>
+          </span>
+          <p class="text-xs sm:text-sm font-medium text-gray-700 leading-tight m-0">Cold Chain Systems</p>
+        </div>
+        <div class="flex flex-col items-center gap-2 text-center rounded-2xl px-3 py-5 bg-gray-50 border border-gray-100 transition-colors hover:border-accent/40">
+          <span class="text-accent-hover">
+            <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M6 20h12M9 20a5 5 0 0 0 8.5-5" />
+              <path d="M11 3h3v7h-3zM12.5 10v3" />
+              <path d="M10 13h5" />
+            </svg>
+          </span>
+          <p class="text-xs sm:text-sm font-medium text-gray-700 leading-tight m-0">Quality &amp; Lab Testing</p>
+        </div>
+      </div>
+
+      <div class="relative mt-16 sm:mt-20 overflow-hidden">
+        <p class="text-center uppercase tracking-[0.3em] text-[11px] text-gray-400 mb-6">
+          Technology partners powering our lines
+        </p>
+        <div id="partner-marquee" class="flex items-center gap-16 w-max animate-marquee"></div>
+      </div>
+    </section>
+
+    <!-- Categories Section -->
+    <section id="services" class="pt-4 px-4 scroll-mt-24">
+      <div class="max-w-7xl mx-auto text-left">
+        <p class="uppercase tracking-[0.3em] text-xs text-gray-500 mb-3">Our Solutions</p>
+        <h2 class="text-4xl sm:text-5xl font-bold text-gray-900 m-0">Process Technology</h2>
+        <div id="stacked-cards" class="relative h-screen overflow-hidden" style="perspective: 1000px"></div>
+      </div>
+    </section>
+
+    <!-- Trusted by -->
+    <section id="trusted" class="pb-24 sm:pb-32 px-6 overflow-hidden scroll-mt-2">
+      <div class="max-w-6xl mx-auto text-center">
+        <div class="mb-24">
+          <h2 class="text-5xl sm:text-6xl font-bold leading-[0.95] m-0">
+            <span class="text-gray-900">Trusted by</span>
+          </h2>
+          <p class="mt-6 max-w-xl mx-auto text-gray-500 text-base sm:text-lg">
+            Food, biotech, and pharma teams bring us in when a line has to work the first time.
+          </p>
+        </div>
+
+        <!-- desktop fan — fixed width matches the scattered cards' own
+             footprint so the cluster centers as a block, since the cards
+             are positioned with left-percent offsets, not centered text -->
+        <div class="mx-auto" style="width: 1000px">
+          <div id="trusted-fan" class="hidden sm:block relative h-[420px]"></div>
+        </div>
+
+        <!-- mobile scroll list -->
+        <div id="trusted-mobile" class="sm:hidden flex gap-4 overflow-x-auto pb-2 -mx-6 px-6 snap-x snap-mandatory"></div>
+      </div>
+    </section>
+
+    <!-- Closing CTA -->
+    <section class="border-t border-gray-100 bg-gray-50 px-6 py-16 sm:py-20">
+      <div class="max-w-3xl mx-auto text-center">
+        <h2 class="text-3xl sm:text-4xl font-bold text-gray-900 m-0">Have a line that needs engineering?</h2>
+        <p class="mt-4 text-gray-500 text-base sm:text-lg max-w-xl mx-auto">
+          Tell us about your process and we will follow up with next steps — equipment selection, automation
+          scope, and a realistic timeline.
+        </p>
+        <div class="mt-8 flex items-center justify-center gap-3 flex-wrap">
+          <a
+            href="https://spincotech.com/contact-us/"
+            class="inline-flex items-center gap-2 rounded-full bg-gray-900 text-white text-sm font-semibold px-6 py-3 no-underline transition-all hover:bg-black hover:-translate-y-0.5 hover:shadow-elevated"
+          >
+            Talk to an engineer
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M5 12h14M13 5l7 7-7 7" />
+            </svg>
+          </a>
+          <a
+            href="/shop"
+            class="inline-flex items-center gap-2 rounded-full bg-white text-gray-900 text-sm font-semibold px-6 py-3 no-underline border border-gray-200 transition-all hover:border-accent hover:-translate-y-0.5"
+          >
+            Browse the shop
+          </a>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    // Where the partner logos live. '/Process-Technology/' matches the Next.js
+    // public folder when served; opened straight from disk, the relative path
+    // back to public/ is used instead.
+    const IMG_BASE =
+      location.protocol === 'file:' ? '../../../public/Process-Technology/' : '/Process-Technology/';
+
+    const services = [
+      {
+        number: '01',
+        bg: 'bg-gradient-to-br from-blue-50 via-indigo-50 to-white',
+        badge: 'bg-indigo-100 text-indigo-700',
+        glow: 'bg-indigo-200',
+        dot: 'bg-indigo-500',
+        title: 'Freeze-Drying',
+        description:
+          'ATS Global is the Independent Solution Provider for Smart Digital Transformation. We are a passionate automation, quality and IT enterprise delivering tangible business value to our customers world-wide. Established in 1986, ATS Global continues its journey on the path to digital transformation.',
+        highlights: [
+          'GMP Freeze Dryer for Injectables Manufacturing',
+          'GMP Freeze Dryer for Biopharma Drug Intermediates, Peptides and Oligos',
+          'Standardized Freeze Dryer for Diagnostics',
+        ],
+        logos: [
+          { file: 'SP Logo Spincotech.png', href: 'https://spincotech.com/partners/sp/' },
+          { file: 'biopharma Group Logo Spincotech.png', href: 'https://spincotech.com/partners/biopharma-group/' },
+          { file: 'Tempris Logo Spincotech.png', href: 'https://spincotech.com/partners/tempris/' },
+        ],
+      },
+      {
+        number: '02',
+        bg: 'bg-gradient-to-br from-cyan-50 via-slate-50 to-white',
+        badge: 'bg-slate-200 text-slate-700',
+        glow: 'bg-cyan-200',
+        dot: 'bg-cyan-600',
+        title: 'Sterilization',
+        description:
+          'Getinge ISOTEST is an isolator designed for sterility testing of sterile drugs, components, and devices. Continuous workflow, easy access, and fast bio-decontamination help increase productivity.',
+        highlights: [
+          'Component & Decontamination Sterilizers',
+          'Steam-Air Mixture Sterilizer for injectables',
+          'cGMP Custom Designed Washers',
+          'Sterility Test Isolators',
+          'Sterile Transfer Systems',
+        ],
+        logos: [{ file: 'Getinge Logo Spincotech.png', href: 'https://spincotech.com/partners/getinge/' }],
+      },
+      {
+        number: '03',
+        bg: 'bg-gradient-to-br from-rose-50 via-red-50 to-white',
+        badge: 'bg-rose-100 text-rose-700',
+        glow: 'bg-rose-200',
+        dot: 'bg-rose-500',
+        title: 'Homogenization',
+        description:
+          'Ever since our company’s founder, Professor Willems, revolutionized the industry with his rotor / stator invention, Kinematica has continued perfecting the technique by customizing and engineering its solutions to fit the most demanding applications.',
+        highlights: [
+          'Inline Homogenizer for Microspheres, Wet-milling and Propofol',
+          'Microspheres Processing in Complex Injectables',
+          'Advanced Crystallization Studies in API and Injectables',
+        ],
+        logos: [
+          { file: 'Kinematica Logo Spincotech.png', href: 'https://spincotech.com/partners/kinematica/' },
+          { file: 'psl Logo Spincotech.png', href: 'https://spincotech.com/partners/psl/' },
+          { file: 'Technobis Logo Spincotech.png', href: 'https://spincotech.com/partners/technobis/' },
+        ],
+      },
+      {
+        number: '04',
+        bg: 'bg-gradient-to-br from-amber-50 via-yellow-50 to-white',
+        badge: 'bg-amber-100 text-amber-800',
+        glow: 'bg-amber-200',
+        dot: 'bg-amber-500',
+        title: 'Packaging Inspection pti-ccit',
+        description:
+          'PTI - Packaging Technologies & Inspection is headquartered in Hawthorne, New York, a Westchester county community close to New York City. PTI is a collective of scientists, engineers and packaging practitioners focused on improving the entire package quality experience throughout the packaging lifecycle.',
+        highlights: [
+          'At-line and Automated O2 & Pressure Headspace Inspection for Parenteral',
+          'Inline CO2 Measurement for Media Fill Inspection and CCIT',
+          'Automated and Online CCI Leak Testing for Parenteral',
+        ],
+        logos: [{ file: 'pti Logo Spincotech.png' }, { file: 'LightHouse Logo Spincotech.png' }],
+      },
+      {
+        number: '05',
+        bg: 'bg-gradient-to-br from-orange-50 via-amber-50 to-white',
+        badge: 'bg-orange-100 text-orange-700',
+        glow: 'bg-orange-200',
+        dot: 'bg-orange-500',
+        title: 'Process Spectroscopy & PAT',
+        description:
+          'The Liebherr Group is a family-run technology company with a broadly diversified product programme, which includes a total of 13 product segments. tec5 thereby covers the entire technology chain for the development and production of the systems, setting standards in the flexible and rapid adaptation of the devices to meet individual process requirements and customer demands.We specialize in MEMS-based near-infrared spectral measurements and offer digital solutions, including app and cloud platforms, for seamless data processing and analysis.',
+        highlights: [
+          'Process Spectroscopy for Pharmaceutical manufacturing.',
+          'Online Moisture and water content for API manufacturing.',
+        ],
+        logos: [
+          { file: 'Liebherr Logo Spincotech.png', href: 'https://spincotech.com/partners/liebherr/' },
+          { file: 'tec5 Logo Spincotech.png', href: 'https://spincotech.com/partners/tec5/' },
+          { file: 'Spectral Engines Spincotech.png', href: 'https://spincotech.com/partners/spectral-engines/' },
+        ],
+      },
+    ];
+
+    const testimonials = [
+      {
+        quote:
+          'They rebuilt our freeze-dry cycle from scratch and cut batch time by almost a third without touching product quality.',
+        author: 'Maya Chen',
+        role: 'Founder @Thistle & Bloom',
+        dark: false,
+        leftPercent: 0,
+        topPx: 8,
+        rotateDeg: -9,
+      },
+      {
+        quote:
+          "We'd seen other agencies lock everything down after two rounds of feedback, then charge more. With this team the flexibility was real. That's why we chose them.",
+        author: 'Owen Reyes',
+        role: 'Co-Founder @Alpine Provisions',
+        dark: true,
+        leftPercent: 18,
+        topPx: 24,
+        rotateDeg: -4,
+      },
+      {
+        quote:
+          'We knew their work before reaching out — the craft was obvious. The final build delivered exactly that, and the team stayed fast and informal the whole way.',
+        author: 'Priya Nandi',
+        role: 'Ops Lead @Harvest Collective',
+        dark: false,
+        leftPercent: 36,
+        topPx: 0,
+        rotateDeg: 0,
+      },
+      {
+        quote:
+          "I've worked with this team on three separate lines now — a pilot cell, a full retrofit, and a documentation pass. I love how flexible, fast, and professional they are.",
+        author: 'Marcus Webb',
+        role: 'Founder @Coastal Cure Co.',
+        dark: true,
+        leftPercent: 54,
+        topPx: 20,
+        rotateDeg: 4,
+      },
+      {
+        quote:
+          "We had a legacy line that hadn't changed since 2013. Handing it to an outside team was a leap of faith. They held their ground on the calls that mattered, and looking back, they were right.",
+        author: 'Elena Sato',
+        role: 'CEO @Root & Ready Foods',
+        dark: false,
+        leftPercent: 72,
+        topPx: 4,
+        rotateDeg: 9,
+      },
+    ];
+
+    const partnerLogos = [
+      'Air-Tech Spincotech Logo.png',
+      'Cryodry Logo Spincotech.png',
+      'Kinematica Logo Spincotech.png',
+      'Liebherr Logo Spincotech.png',
+      'LightHouse Logo Spincotech.png',
+      'SP Logo Spincotech.png',
+      'Spectral Engines Spincotech.png',
+      'Technobis Logo Spincotech.png',
+      'Tempris Logo Spincotech.png',
+      'biopharma Group Logo Spincotech.png',
+      'psl Logo Spincotech.png',
+      'pti Logo Spincotech.png',
+      'tec5 Logo Spincotech.png',
+    ];
+
+    const esc = (s) =>
+      String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
+    const logoSrc = (file) => IMG_BASE + encodeURIComponent(file);
+    const logoAlt = (file) => esc(file.replace(/\.png$/i, ''));
+
+    function stars() {
+      const star =
+        '<svg viewBox="0 0 20 20" width="14" height="14" fill="currentColor" aria-hidden="true"><path d="M10 1.5l2.6 5.3 5.9.9-4.3 4.1 1 5.9-5.2-2.8-5.2 2.8 1-5.9L1.5 7.7l5.9-.9L10 1.5Z" /></svg>';
+      return `<div class="flex gap-0.5 text-accent">${star.repeat(5)}</div>`;
+    }
+
+    function avatar(name, extra) {
+      const initials = name
+        .split(' ')
+        .map((part) => part[0])
+        .slice(0, 2)
+        .join('')
+        .toUpperCase();
+      return `<div class="inline-flex items-center justify-center shrink-0 rounded-full bg-accent-subtle text-accent-hover font-semibold w-9 h-9 text-xs ${extra}">${esc(initials)}</div>`;
+    }
+
+    function testimonialBody(t, clamp) {
+      return `
+        <div class="flex items-center justify-between mb-4">
+          ${stars()}
+          <span class="text-[10px] font-semibold uppercase tracking-wide ${t.dark ? 'text-white/60' : 'text-gray-500'}">Contact Sales</span>
+        </div>
+        <p class="text-sm leading-relaxed mb-6 ${clamp ? 'line-clamp-6' : ''} ${t.dark ? 'text-white/85' : 'text-gray-700'}">&ldquo;${esc(t.quote)}&rdquo;</p>
+        <div class="flex items-center gap-3">
+          ${avatar(t.author, t.dark ? 'bg-white/10! text-white!' : '')}
+          <div class="text-xs">
+            <div class="font-semibold">${esc(t.author)}</div>
+            <div class="${t.dark ? 'text-white/60' : 'text-gray-500'}">${esc(t.role)}</div>
+          </div>
+        </div>`;
+    }
+
+    // Partner logo marquee — list doubled so the -50% loop is seamless.
+    document.getElementById('partner-marquee').innerHTML = [...partnerLogos, ...partnerLogos]
+      .map(
+        (file) =>
+          `<img src="${logoSrc(file)}" alt="${logoAlt(file)}" class="h-10 sm:h-12 w-auto object-contain grayscale opacity-70 hover:grayscale-0 hover:opacity-100 transition" />`
+      )
+      .join('');
+
+    // Stacked service cards
+    const stack = document.getElementById('stacked-cards');
+    stack.innerHTML = services
+      .map((service, i) => {
+        const logos = service.logos
+          .map((logo) => {
+            const tag = logo.href ? 'a' : 'div';
+            const attrs = logo.href ? ` href="${esc(logo.href)}" target="_blank" rel="noopener noreferrer"` : '';
+            return `
+              <${tag}${attrs} class="group flex flex-col items-center gap-2 cursor-pointer">
+                <div class="w-24 h-16 sm:w-28 sm:h-20 rounded-xl bg-white border border-black/5 flex items-center justify-center p-3 shadow-elevated transition-transform group-hover:-translate-y-0.5">
+                  <img src="${logoSrc(logo.file)}" alt="${logoAlt(logo.file)}" class="max-w-full max-h-full object-contain" />
+                </div>
+                <span class="block w-8 h-0.5 rounded-full ${service.dot} opacity-70 transition-opacity group-hover:opacity-100"></span>
+              </${tag}>`;
+          })
+          .join('');
+        const highlights = service.highlights
+          .map(
+            (item) => `
+              <li class="flex items-start gap-2.5 text-gray-700 text-sm sm:text-base leading-relaxed">
+                <span class="mt-2 w-1.5 h-1.5 rounded-full shrink-0 ${service.dot}"></span>
+                ${esc(item)}
+              </li>`
+          )
+          .join('');
+        return `
+          <div class="stack-card absolute top-[42%] left-1/2 w-[min(95vw,1200px)]" style="will-change: transform; transform-origin: bottom center; z-index: ${services.length - i}">
+            <div class="relative overflow-hidden rounded-[2rem] p-8 sm:p-12 border border-black/5 shadow-lifted flex flex-col ${service.bg}" style="min-height: 480px">
+              <div aria-hidden="true" class="pointer-events-none absolute -top-20 -right-20 w-72 h-72 rounded-full blur-3xl opacity-60 ${service.glow}"></div>
+              <div aria-hidden="true" class="pointer-events-none absolute -bottom-24 -left-16 w-56 h-56 rounded-full blur-3xl opacity-40 ${service.glow}"></div>
+
+              <div class="relative flex items-start justify-between gap-6 mb-6">
+                <h3 class="text-2xl sm:text-3xl font-bold max-w-xl m-0 text-gray-900">${esc(service.title)}</h3>
+                <span class="inline-flex items-center justify-center w-11 h-11 rounded-full text-sm font-semibold shrink-0 ${service.badge}">${service.number}</span>
+              </div>
+              <p class="relative max-w-2xl text-gray-600 leading-relaxed mb-4">${esc(service.description)}</p>
+
+              <ul class="relative flex flex-col gap-2 max-w-2xl mb-10">${highlights}</ul>
+
+              <div class="relative flex justify-end mt-auto">
+                <div class="flex items-center gap-4 flex-wrap justify-end">${logos}</div>
+              </div>
+            </div>
+          </div>`;
+      })
+      .join('');
+
+    // Scroll-driven card deck (ported from StackedServiceCards.tsx).
+    // Depth offsets for the cards waiting behind the active one.
+    const CARD_GAP = 18;
+    const SCALE_STEP = 0.045;
+    // How far and how sharply the active card tilts away as it exits.
+    const EXIT_LIFT_RATIO = 0.9;
+    const EXIT_ROTATION = -42;
+    // Scroll distance per card, as a fraction of viewport height.
+    const SCROLL_HEIGHT_PER_CARD = 0.6;
+    // How far through the last card's exit the user scrolls before the section unpins.
+    const LAST_CARD_RELEASE_FRACTION = 0.05;
+
+    (function initStack() {
+      gsap.registerPlugin(ScrollTrigger);
+      const cards = Array.from(stack.querySelectorAll('.stack-card'));
+      const n = cards.length;
+      const segmentSize = 1 / n;
+      const totalSegments = n - 1 + LAST_CARD_RELEASE_FRACTION;
+
+      cards.forEach((card, index) => {
+        gsap.set(card, {
+          xPercent: -50,
+          yPercent: -50,
+          y: index * CARD_GAP,
+          scale: 1 - index * SCALE_STEP,
+          rotationX: 0,
+        });
+      });
+
+      ScrollTrigger.create({
+        trigger: stack,
+        start: 'top top',
+        end: () => `+=${window.innerHeight * totalSegments * SCROLL_HEIGHT_PER_CARD}`,
+        pin: true,
+        pinSpacing: true,
+        scrub: true,
+        onUpdate: (self) => {
+          const progress = Math.min(self.progress * (totalSegments / n), 1);
+          const activeIndex = Math.min(Math.floor(progress / segmentSize), n - 1);
+          const segmentProgress = Math.min((progress - activeIndex * segmentSize) / segmentSize, 1);
+
+          cards.forEach((card, index) => {
+            if (index < activeIndex) {
+              gsap.set(card, { y: -window.innerHeight * EXIT_LIFT_RATIO, rotationX: EXIT_ROTATION, scale: 1 });
+            } else if (index === activeIndex) {
+              gsap.set(card, {
+                y: gsap.utils.interpolate(0, -window.innerHeight * EXIT_LIFT_RATIO, segmentProgress),
+                rotationX: gsap.utils.interpolate(0, EXIT_ROTATION, segmentProgress),
+                scale: 1,
+              });
+            } else {
+              const behindIndex = index - activeIndex;
+              gsap.set(card, {
+                y: behindIndex * CARD_GAP - segmentProgress * CARD_GAP,
+                rotationX: 0,
+                scale: 1 - (behindIndex - segmentProgress) * SCALE_STEP,
+              });
+            }
+          });
+        },
+      });
+
+      window.addEventListener('load', () => ScrollTrigger.refresh());
+      window.addEventListener('resize', () => ScrollTrigger.refresh());
+    })();
+
+    // Trusted-by fan (ported from TrustedByFan.tsx) — hovering a card lifts it
+    // and pushes its neighbours aside.
+    const SPREAD = 170;
+    const fan = document.getElementById('trusted-fan');
+    fan.innerHTML = testimonials
+      .map(
+        (t) => `
+          <div class="fan-card absolute w-[280px] rounded-2xl p-6 transition-transform duration-300 ease-out shadow-lifted ${
+            t.dark ? 'bg-neutral-800 text-white' : 'bg-white text-gray-900'
+          }" style="left: ${t.leftPercent}%; top: ${t.topPx}px">
+            ${testimonialBody(t, true)}
+          </div>`
+      )
+      .join('');
+
+    const fanCards = Array.from(fan.querySelectorAll('.fan-card'));
+    function layoutFan(hovered) {
+      fanCards.forEach((card, i) => {
+        const t = testimonials[i];
+        const isHovered = hovered === i;
+        const translateX = hovered === null || isHovered ? 0 : i < hovered ? -SPREAD : SPREAD;
+        const rotate = isHovered ? 0 : t.rotateDeg;
+        const scale = isHovered ? 1.06 : 1;
+        const translateY = isHovered ? -14 : 0;
+        card.style.zIndex = isHovered ? 50 : i + 1;
+        card.style.transform = `translateX(${translateX}px) translateY(${translateY}px) rotate(${rotate}deg) scale(${scale})`;
+        card.classList.toggle('shadow-2xl', isHovered);
+        card.classList.toggle('shadow-lifted', !isHovered);
+      });
+    }
+    fanCards.forEach((card, i) => {
+      card.addEventListener('mouseenter', () => layoutFan(i));
+      card.addEventListener('mouseleave', () => layoutFan(null));
+    });
+    layoutFan(null);
+
+    // Mobile scroll list
+    document.getElementById('trusted-mobile').innerHTML = testimonials
+      .map(
+        (t) => `
+          <div class="trusted-card relative snap-start shrink-0 w-[80vw]">
+            <div class="trusted-card-box absolute inset-0 rounded-2xl shadow-lifted ${t.dark ? 'bg-neutral-800' : 'bg-white'}"></div>
+            <div class="relative p-6 ${t.dark ? 'text-white' : 'text-gray-900'}">${testimonialBody(t, false)}</div>
+          </div>`
+      )
+      .join('');
+  </script>
+</body>
+</html>

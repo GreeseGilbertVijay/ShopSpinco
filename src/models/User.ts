@@ -10,6 +10,9 @@ export interface IUser extends Document {
   isVerified: boolean;
   otpCode?: string;
   otpExpiresAt?: Date;
+  resetCode?: string;
+  resetExpiresAt?: Date;
+  resetAttempts?: number;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -23,8 +26,14 @@ const userSchema = new Schema<IUser>(
     isVerified: { type: Boolean, default: false },
     otpCode: { type: String },
     otpExpiresAt: { type: Date },
+    resetCode: { type: String },
+    resetExpiresAt: { type: Date },
+    resetAttempts: { type: Number, default: 0 },
   },
   { timestamps: true }
 );
 
-export default (mongoose.models.User as Model<IUser>) || mongoose.model<IUser>('User', userSchema);
+// Stored in "shopusers", not "users": the shared spinco-dashboard database's "users" collection
+// belongs to the dashboard app and has a unique employeeId index our documents don't populate,
+// so every signup after the first would fail with a duplicate-key error.
+export default (mongoose.models.User as Model<IUser>) || mongoose.model<IUser>('User', userSchema, 'shopusers');

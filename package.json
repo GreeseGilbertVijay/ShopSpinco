@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "create-superadmin": "node --env-file=.env.local scripts/create-superadmin.mjs"
   },
   "dependencies": {
     "@tailwindcss/typography": "^0.5.20",

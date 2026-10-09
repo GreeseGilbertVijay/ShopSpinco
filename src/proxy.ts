@@ -2,7 +2,7 @@ import { NextResponse, type NextRequest } from 'next/server';
 import { COOKIE_NAME } from '@/lib/auth';
 import { verifySessionEdge } from '@/lib/auth-edge';
 
-const GUEST_ONLY_PATHS = ['/login', '/register'];
+const GUEST_ONLY_PATHS = ['/login', '/register', '/forgot-password'];
 
 export async function proxy(req: NextRequest) {
   const { pathname } = req.nextUrl;
@@ -34,5 +34,5 @@ export async function proxy(req: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/dashboard/:path*', '/profile', '/login', '/register'],
+  matcher: ['/dashboard/:path*', '/profile', '/login', '/register', '/forgot-password'],
 };
