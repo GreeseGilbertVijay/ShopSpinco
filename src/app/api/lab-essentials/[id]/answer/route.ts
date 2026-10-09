@@ -8,8 +8,9 @@ interface RouteContext {
   params: Promise<{ id: string }>;
 }
 
-// Public: record an answer for the live (host-controlled) question. The participant does not
-// advance on their own — they wait until the host moves everyone to the next question.
+// Public: record an answer for the participant's own current question. The quiz is
+// self-paced once the host starts it, so the response tells the client which question to
+// move straight on to (or that they've finished).
 export async function POST(req: NextRequest, { params }: RouteContext) {
   const { id } = await params;
   const { questionIndex, selectedOption } = await req.json();
@@ -22,26 +23,25 @@ export async function POST(req: NextRequest, { params }: RouteContext) {
   if (!entry) return NextResponse.json({ message: 'Entry not found' }, { status: 404 });
 
   const totalQuestions = LAB_ESSENTIALS_QUESTIONS.length;
-  if (session.currentQuestion >= totalQuestions) {
-    return NextResponse.json({ completed: true, currentQuestion: session.currentQuestion });
+  const ownQuestion = entry.answers.length;
+  if (session.currentQuestion >= totalQuestions || ownQuestion >= totalQuestions) {
+    return NextResponse.json({ completed: true, currentQuestion: ownQuestion });
+  }
+  if (session.currentQuestion < 0) {
+    return NextResponse.json({ message: 'The quiz has not started yet' }, { status: 409 });
   }
 
-  // Reject stale/out-of-order submissions (e.g. the host already moved on) and hand the
-  // client the question it should actually be on.
-  if (questionIndex !== session.currentQuestion) {
+  // Reject stale/out-of-order submissions (e.g. a double submit or a second tab) and hand
+  // the client the question it should actually be on.
+  if (questionIndex !== ownQuestion) {
     return NextResponse.json(
       {
         message: 'Question mismatch',
-        currentQuestion: session.currentQuestion,
-        question: sanitizeQuestion(session.currentQuestion),
+        currentQuestion: ownQuestion,
+        question: sanitizeQuestion(ownQuestion),
       },
       { status: 409 }
     );
-  }
-
-  const alreadyAnswered = entry.answers.some((a) => a.question === session.currentQuestion);
-  if (alreadyAnswered) {
-    return NextResponse.json({ waiting: true, currentQuestion: session.currentQuestion });
   }
 
   const question = LAB_ESSENTIALS_QUESTIONS[questionIndex];
@@ -53,13 +53,12 @@ export async function POST(req: NextRequest, { params }: RouteContext) {
   const correct = normalizedSelection !== null && normalizedSelection === question.correctIndex;
   const marks = correct ? MARKS_PER_QUESTION : 0;
   // Timed server-side from when THIS participant's client actually loaded the question
-  // (stamped on GET), not from whenever the host advanced it globally — a slow page load
-  // shouldn't inflate their answer time. Falls back to the global timestamp for the rare
-  // case a submit arrives without ever having resynced first.
+  // (stamped on GET). Falls back to their previous answer's save time for the rare case a
+  // submit arrives without ever having resynced first.
   const seenAt =
-    entry.currentQuestionSeenFor === session.currentQuestion && entry.currentQuestionSeenAt
+    entry.currentQuestionSeenFor === ownQuestion && entry.currentQuestionSeenAt
       ? entry.currentQuestionSeenAt
-      : session.currentQuestionStartedAt;
+      : entry.updatedAt;
   const safeTime = Math.max(Math.floor((Date.now() - seenAt.getTime()) / 1000), 0);
 
   entry.answers.push({
@@ -71,7 +70,12 @@ export async function POST(req: NextRequest, { params }: RouteContext) {
   });
   entry.totalScore += marks;
   entry.totalTimeSeconds += safeTime;
+  const completed = entry.answers.length >= totalQuestions;
+  if (completed) {
+    entry.status = 'completed';
+    entry.completedAt = new Date();
+  }
   await entry.save();
 
-  return NextResponse.json({ waiting: true, currentQuestion: session.currentQuestion });
+  return NextResponse.json({ completed, currentQuestion: entry.answers.length });
 }

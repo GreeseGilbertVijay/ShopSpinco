@@ -126,15 +126,15 @@ export default function LabEssentialsDashboard() {
     }
   }
 
-  // Ending the quiz (vs. just moving to the next question) is harder to walk back — every
-  // participant lands on their score page and a new "Start" goes straight to it too, until
-  // someone resets — so this one step needs a deliberate confirmation.
+  // Starting just opens the quiz (participants then go at their own pace). Ending it is harder
+  // to walk back — anyone still mid-quiz lands on their score page and latecomers are told it
+  // has ended, until someone resets — so that step needs a deliberate confirmation.
   function handleAdvanceClick() {
     if (!session) return;
-    if (session.currentQuestion + 1 === session.totalQuestions) {
-      setShowFinishConfirm(true);
-    } else {
+    if (session.currentQuestion < 0) {
       handleAdvance();
+    } else {
+      setShowFinishConfirm(true);
     }
   }
 
@@ -257,7 +257,7 @@ export default function LabEssentialsDashboard() {
                   ? 'Waiting room'
                   : session.completed
                     ? 'Quiz completed'
-                    : `Question ${session.currentQuestion + 1} of ${session.totalQuestions}`}
+                    : 'Quiz in progress'}
               </h2>
             </div>
             <button
@@ -275,28 +275,12 @@ export default function LabEssentialsDashboard() {
             </p>
           )}
 
-          {!session.completed && session.question && (
-            <>
-              <p className="whitespace-pre-line text-sm text-gray-700 mb-4">{session.question.question}</p>
-              <div className="flex flex-col gap-2 mb-4">
-                {session.question.options.map((option, i) => (
-                  <div
-                    key={i}
-                    className={`flex items-center justify-between gap-3 px-3 py-2 rounded-lg border text-sm ${
-                      i === session.question!.correctIndex ? 'border-success bg-success-subtle' : 'border-gray-200'
-                    }`}
-                  >
-                    <span className={i === session.question!.correctIndex ? 'font-medium text-success' : 'text-gray-700'}>
-                      {option}
-                    </span>
-                    <span className="font-semibold tabular-nums text-gray-500">{session.optionCounts[i] ?? 0}</span>
-                  </div>
-                ))}
-              </div>
-              <p className="text-sm text-gray-500 mb-4">
-                {session.answeredCount} / {session.totalParticipants} participants answered
-              </p>
-            </>
+          {session.currentQuestion >= 0 && (
+            <p className="text-sm text-gray-500 mb-4">
+              {session.completedCount} / {session.totalParticipants} participants finished all{' '}
+              {session.totalQuestions} questions.
+              {!session.completed && ' Participants move through the questions at their own pace.'}
+            </p>
           )}
 
           {!session.completed && (
@@ -304,12 +288,10 @@ export default function LabEssentialsDashboard() {
               {advancing
                 ? session.currentQuestion < 0
                   ? 'Starting...'
-                  : 'Advancing...'
+                  : 'Ending...'
                 : session.currentQuestion < 0
                   ? 'Start Quiz'
-                  : session.currentQuestion + 1 === session.totalQuestions
-                    ? 'Finish Quiz'
-                    : 'Next Question'}
+                  : 'End Quiz'}
             </button>
           )}
         </Card>
@@ -443,9 +425,9 @@ export default function LabEssentialsDashboard() {
 
       <ConfirmDialog
         open={showFinishConfirm}
-        title="Finish quiz"
-        message="This ends the quiz for everyone right now — every participant is sent to their score page, and anyone new who hits Start will be told the quiz has ended, until you use Reset Quiz."
-        confirmLabel="Finish Quiz"
+        title="End quiz"
+        message="This ends the quiz for everyone right now — anyone still answering is sent to their score page with what they've answered so far, and anyone new who hits Start will be told the quiz has ended, until you use Reset Quiz."
+        confirmLabel="End Quiz"
         confirming={advancing}
         onConfirm={handleFinishConfirmed}
         onCancel={() => setShowFinishConfirm(false)}

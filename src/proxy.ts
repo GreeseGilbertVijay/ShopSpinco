@@ -8,8 +8,20 @@ const GUEST_ONLY_PATHS = ['/login', '/register', '/forgot-password'];
 // profile page, which is where Log Out lives). Every other page sends them back to /dashboard.
 const ADMIN_ALLOWED_PATHS = ['/dashboard', '/dashboard/cytiva-day', '/dashboard/lab-essentials-quiz', '/profile'];
 
+// Public participant quiz pages (and everything under them) that every user type — guests,
+// users, admins and superAdmins — can open.
+const PUBLIC_QUIZ_PATHS = ['/lab-essentials-quiz'];
+
+function isPublicQuizPath(pathname: string) {
+  return PUBLIC_QUIZ_PATHS.some((route) => pathname === route || pathname.startsWith(`${route}/`));
+}
+
 export async function proxy(req: NextRequest) {
   const { pathname } = req.nextUrl;
+  if (isPublicQuizPath(pathname)) {
+    return NextResponse.next();
+  }
+
   const token = req.cookies.get(COOKIE_NAME)?.value;
   const session = token ? await verifySessionEdge(token) : null;
 

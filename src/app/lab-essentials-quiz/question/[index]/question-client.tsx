@@ -19,16 +19,16 @@ export default function QuestionClient({ pageIndex }: { pageIndex: string }) {
   const zeroBasedIndex = Number(pageIndex) - 1;
 
   const [question, setQuestion] = useState<LabEssentialsQuestionView | null>(null);
-  const [status, setStatus] = useState<'loading' | 'ready' | 'waiting' | 'error'>('loading');
+  const [status, setStatus] = useState<'loading' | 'ready' | 'error'>('loading');
   const [selectedOption, setSelectedOption] = useState<number | null>(null);
   const [elapsed, setElapsed] = useState(0);
   const [submitting, setSubmitting] = useState(false);
-  const [answeredCount, setAnsweredCount] = useState<number | null>(null);
-  const [totalParticipants, setTotalParticipants] = useState<number | null>(null);
 
   const submittedRef = useRef(false);
   const tickRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
+  // Self-paced: once the answer is recorded, move straight on to the next question (or the
+  // results page after the last one) — no waiting for the host.
   const submitAnswer = useCallback(
     async (selected: number | null) => {
       if (!sid || submittedRef.current) return;
@@ -36,25 +36,28 @@ export default function QuestionClient({ pageIndex }: { pageIndex: string }) {
       setSubmitting(true);
 
       try {
-        await submitLabEssentialsAnswer(sid, {
+        const result = await submitLabEssentialsAnswer(sid, {
           questionIndex: zeroBasedIndex,
           selectedOption: selected,
         });
-        // Freeze the on-screen timer at the moment of submission instead of letting it
-        // keep counting through the wait for the host to advance.
         if (tickRef.current) {
           clearInterval(tickRef.current);
           tickRef.current = null;
         }
-        setStatus('waiting');
+        if (result.completed) {
+          router.replace(`/lab-essentials-quiz/complete?sid=${sid}`);
+        } else if (typeof result.currentQuestion === 'number') {
+          router.replace(`/lab-essentials-quiz/question/${result.currentQuestion + 1}?sid=${sid}`);
+        } else {
+          router.replace(`/lab-essentials-quiz/waiting?sid=${sid}`);
+        }
       } catch {
         submittedRef.current = false;
         setStatus('error');
-      } finally {
         setSubmitting(false);
       }
     },
-    [sid, zeroBasedIndex]
+    [sid, zeroBasedIndex, router]
   );
 
   // Load (or resync) quiz state for this question, then start its stopwatch.
@@ -81,25 +84,21 @@ export default function QuestionClient({ pageIndex }: { pageIndex: string }) {
           return;
         }
 
-        submittedRef.current = state.waiting;
+        submittedRef.current = false;
+        setSubmitting(false);
         setSelectedOption(null);
         setQuestion(state.question);
-        setAnsweredCount(state.answeredCount ?? null);
-        setTotalParticipants(state.totalParticipants ?? null);
-        setStatus(state.waiting ? 'waiting' : 'ready');
+        setStatus('ready');
 
         // Anchor to how long the question has actually been live server-side (survives
         // a refresh), then keep counting locally from that baseline using our own clock —
-        // this avoids relying on the client and server clocks being in sync. If we've
-        // already answered (e.g. reloaded while waiting), leave the timer frozen.
+        // this avoids relying on the client and server clocks being in sync.
         const baseline = state.currentQuestionElapsedSeconds;
         setElapsed(baseline);
-        if (!state.waiting) {
-          const fetchedAt = Date.now();
-          tickRef.current = setInterval(() => {
-            setElapsed(baseline + Math.floor((Date.now() - fetchedAt) / 1000));
-          }, 250);
-        }
+        const fetchedAt = Date.now();
+        tickRef.current = setInterval(() => {
+          setElapsed(baseline + Math.floor((Date.now() - fetchedAt) / 1000));
+        }, 250);
       })
       .catch(() => {
         if (!cancelled) router.replace('/lab-essentials-quiz');
@@ -115,8 +114,7 @@ export default function QuestionClient({ pageIndex }: { pageIndex: string }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sid, pageIndex]);
 
-  // Poll for the host advancing (or ending) the quiz — this can happen whether we've
-  // already answered and are waiting, or we're still looking at the question.
+  // Poll for the host ending (or resetting) the quiz while we're on a question.
   useEffect(() => {
     if (!sid || status === 'loading' || status === 'error') return;
     const poll = setInterval(() => {
@@ -132,10 +130,7 @@ export default function QuestionClient({ pageIndex }: { pageIndex: string }) {
           }
           if (state.currentQuestion !== zeroBasedIndex) {
             router.replace(`/lab-essentials-quiz/question/${state.currentQuestion + 1}?sid=${sid}`);
-            return;
           }
-          setAnsweredCount(state.answeredCount ?? null);
-          setTotalParticipants(state.totalParticipants ?? null);
         })
         .catch(() => {});
     }, POLL_INTERVAL_MS);
@@ -186,51 +181,32 @@ export default function QuestionClient({ pageIndex }: { pageIndex: string }) {
 
         <h2 className="whitespace-pre-line text-left font-bold text-[#f29a4e]! mb-8 leading-snug">{question.question}</h2>
 
-        {status === 'waiting' ? (
-          <div className="flex flex-col items-center text-center gap-3 py-4">
-            <span className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-accent-subtle text-[#f29a4e]">
-              <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                <path d="M20 6 9 17l-5-5" />
-              </svg>
-            </span>
-            <p className="text-[#f29a4e] font-semibold">Answer submitted!</p>
-            <p className="text-sm text-[#f29a4e]/80">Waiting for the host to move to the next question&hellip;</p>
-            {answeredCount !== null && totalParticipants !== null && (
-              <p className="text-xs font-semibold tabular-nums text-[#f29a4e] bg-white/60 rounded-full px-3 py-1">
-                {answeredCount} / {totalParticipants} participants answered
-              </p>
-            )}
-          </div>
-        ) : (
-          <>
-            <div className="flex flex-col gap-3 mb-8">
-              {question.options.map((option, i) => (
-                <button
-                  key={i}
-                  type="button"
-                  onClick={() => setSelectedOption(i)}
-                  disabled={submitting}
-                  className={`text-left px-4 py-3 rounded-lg border transition-colors cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed text-[#f29a4e] ${
-                    selectedOption === i
-                      ? 'border-accent bg-accent-subtle'
-                      : 'border-gray-200 bg-white hover:border-accent/50'
-                  }`}
-                >
-                  {option}
-                </button>
-              ))}
-            </div>
-
+        <div className="flex flex-col gap-3 mb-8">
+          {question.options.map((option, i) => (
             <button
+              key={i}
               type="button"
-              className={buttonClasses({ size: 'lg', className: 'w-full' })}
-              onClick={handleManualSubmit}
-              disabled={selectedOption === null || submitting}
+              onClick={() => setSelectedOption(i)}
+              disabled={submitting}
+              className={`text-left px-4 py-3 rounded-lg border transition-colors cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed text-[#f29a4e] ${
+                selectedOption === i
+                  ? 'border-accent bg-accent-subtle'
+                  : 'border-gray-200 bg-white hover:border-accent/50'
+              }`}
             >
-              {submitting ? 'Submitting...' : 'Submit Answer'}
+              {option}
             </button>
-          </>
-        )}
+          ))}
+        </div>
+
+        <button
+          type="button"
+          className={buttonClasses({ size: 'lg', className: 'w-full' })}
+          onClick={handleManualSubmit}
+          disabled={selectedOption === null || submitting}
+        >
+          {submitting ? 'Submitting...' : question.index + 1 === question.total ? 'Submit & Finish' : 'Next Question'}
+        </button>
       </Card>
     </div>
   );

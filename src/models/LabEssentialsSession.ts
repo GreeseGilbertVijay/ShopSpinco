@@ -1,10 +1,13 @@
 import mongoose, { Schema, type Document, type Model } from 'mongoose';
 
-// Singleton: there is exactly one live Lab Essentials Technical Seminar quiz session, host-controlled from the
-// admin dashboard. `currentQuestion` is the question every participant is synchronized to:
-// -1 means the host hasn't started it yet (participants sit in a waiting room), 0..N-1 is
-// a live question index, and N (LAB_ESSENTIALS_QUESTIONS.length) means the host has ended it.
+// Singleton: there is exactly one Lab Essentials Technical Seminar quiz session, opened and closed
+// from the admin dashboard. `currentQuestion` is the session's phase, not a shared question:
+// -1 means the host hasn't started it yet (participants sit in a waiting room),
+// LAB_ESSENTIALS_LIVE (0) means it's open and each participant works through the questions at
+// their own pace (their position is their own answers.length), and N
+// (LAB_ESSENTIALS_QUESTIONS.length) means the host has ended it.
 const SINGLETON_KEY = 'lab-essentials';
+export const LAB_ESSENTIALS_LIVE = 0;
 
 export interface ILabEssentialsSession extends Document {
   key: string;

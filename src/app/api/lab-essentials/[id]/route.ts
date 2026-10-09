@@ -9,7 +9,8 @@ interface RouteContext {
   params: Promise<{ id: string }>;
 }
 
-// Public: resync quiz state (used on question page load / refresh and while waiting for the host)
+// Public: resync quiz state (used on question page load / refresh and while waiting for the host
+// to start). Once started, each participant is on their own next unanswered question.
 export async function GET(_req: NextRequest, { params }: RouteContext) {
   const { id } = await params;
   await connectDB();
@@ -37,19 +38,23 @@ export async function GET(_req: NextRequest, { params }: RouteContext) {
     });
   }
 
-  // The host ending the quiz is a single global event — reconcile stragglers who hadn't
-  // been marked completed yet (e.g. they were mid-question when the host finished).
-  if (globallyCompleted && entry.status !== 'completed') {
+  // Self-paced: each participant's question is simply the next one they haven't answered.
+  const ownQuestion = entry.answers.length;
+  const finished = globallyCompleted || ownQuestion >= totalQuestions;
+
+  // Reconcile anyone who has answered everything, or who was still mid-quiz when the host
+  // ended it, but hasn't been marked completed yet.
+  if (finished && entry.status !== 'completed') {
     entry.status = 'completed';
     entry.completedAt = new Date();
     await entry.save();
   }
 
-  if (globallyCompleted) {
+  if (finished) {
     return NextResponse.json({
       name: entry.name,
       status: 'completed',
-      currentQuestion: session.currentQuestion,
+      currentQuestion: ownQuestion,
       currentQuestionElapsedSeconds: 0,
       totalScore: entry.totalScore,
       totalQuestions,
@@ -59,45 +64,30 @@ export async function GET(_req: NextRequest, { params }: RouteContext) {
     });
   }
 
-  const hasAnsweredCurrent = entry.answers.some((a) => a.question === session.currentQuestion);
-
-  // Stamp the moment THIS participant's client actually reached the current question,
+  // Stamp the moment THIS participant's client actually reached their current question,
   // the first time we see them here for it — so their timer (and later their scored
-  // answer time) starts from their own page load, not from whenever the host clicked
-  // "Next Question" globally. A slow connection shouldn't cost them answer time.
-  if (!hasAnsweredCurrent && entry.currentQuestionSeenFor !== session.currentQuestion) {
-    entry.currentQuestionSeenFor = session.currentQuestion;
+  // answer time) starts from their own page load.
+  if (entry.currentQuestionSeenFor !== ownQuestion || !entry.currentQuestionSeenAt) {
+    entry.currentQuestionSeenFor = ownQuestion;
     entry.currentQuestionSeenAt = new Date();
     await entry.save();
   }
 
-  const seenAt =
-    entry.currentQuestionSeenFor === session.currentQuestion && entry.currentQuestionSeenAt
-      ? entry.currentQuestionSeenAt
-      : session.currentQuestionStartedAt;
-  const currentQuestionElapsedSeconds = Math.max(Math.floor((Date.now() - seenAt.getTime()) / 1000), 0);
-
-  let answeredCount: number | undefined;
-  let totalParticipants: number | undefined;
-  if (hasAnsweredCurrent) {
-    [answeredCount, totalParticipants] = await Promise.all([
-      LabEssentialsEntry.countDocuments({ answers: { $elemMatch: { question: session.currentQuestion } } }),
-      LabEssentialsEntry.countDocuments({}),
-    ]);
-  }
+  const currentQuestionElapsedSeconds = Math.max(
+    Math.floor((Date.now() - entry.currentQuestionSeenAt!.getTime()) / 1000),
+    0
+  );
 
   return NextResponse.json({
     name: entry.name,
     status: 'in-progress',
-    currentQuestion: session.currentQuestion,
+    currentQuestion: ownQuestion,
     currentQuestionElapsedSeconds,
     totalScore: entry.totalScore,
     totalQuestions,
     marksPerQuestion: MARKS_PER_QUESTION,
-    question: sanitizeQuestion(session.currentQuestion),
-    waiting: hasAnsweredCurrent,
-    answeredCount,
-    totalParticipants,
+    question: sanitizeQuestion(ownQuestion),
+    waiting: false,
   });
 }
 

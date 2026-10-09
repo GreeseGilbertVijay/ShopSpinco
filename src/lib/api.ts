@@ -456,7 +456,6 @@ export async function getLabEssentialsEntryState(id: string): Promise<{
   marksPerQuestion: number;
   question: LabEssentialsQuestionView | null;
   waiting: boolean;
-  answeredCount?: number;
   totalParticipants?: number;
 }> {
   const res = await fetch(`/api/lab-essentials/${id}`);
@@ -467,7 +466,7 @@ export async function getLabEssentialsEntryState(id: string): Promise<{
 export async function submitLabEssentialsAnswer(
   id: string,
   payload: { questionIndex: number; selectedOption: number | null }
-): Promise<{ waiting?: boolean; completed?: boolean; currentQuestion?: number; question?: LabEssentialsQuestionView | null }> {
+): Promise<{ completed?: boolean; currentQuestion?: number; question?: LabEssentialsQuestionView | null }> {
   const res = await fetch(`/api/lab-essentials/${id}/answer`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -480,15 +479,14 @@ export async function submitLabEssentialsAnswer(
   return data;
 }
 
+// currentQuestion is the session phase: -1 = waiting room, 0 = open (self-paced),
+// totalQuestions = ended by the host.
 export interface LabEssentialsSessionState {
   currentQuestion: number;
   totalQuestions: number;
   completed: boolean;
-  question: { index: number; total: number; question: string; options: string[]; correctIndex: number } | null;
-  currentQuestionElapsedSeconds: number;
-  answeredCount: number;
   totalParticipants: number;
-  optionCounts: number[];
+  completedCount: number;
 }
 
 export async function getLabEssentialsSession(): Promise<LabEssentialsSessionState> {
