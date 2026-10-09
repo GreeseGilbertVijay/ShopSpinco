@@ -61,3 +61,13 @@ export function requireSuperAdmin(req: NextRequest): SessionPayload {
   }
   return session;
 }
+
+// Quiz hosting (Cytiva Day / Lab Essentials dashboards) is open to superAdmins and to the
+// quiz-only "admin" role.
+export function requireQuizHost(req: NextRequest): SessionPayload {
+  const session = getSession(req);
+  if (session.role !== 'superAdmin' && session.role !== 'admin') {
+    throw new AuthError('Forbidden', 403);
+  }
+  return session;
+}

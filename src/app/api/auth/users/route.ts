@@ -10,7 +10,7 @@ export async function GET(req: NextRequest) {
     await connectDB();
     const role = req.nextUrl.searchParams.get('role');
     const filter: QueryFilter<IUser> = {};
-    if (role === 'superAdmin' || role === 'customer') filter.role = role;
+    if (role === 'superAdmin' || role === 'admin' || role === 'customer') filter.role = role;
     const users = await User.find(filter).select('-passwordHash').sort({ createdAt: -1 });
     return NextResponse.json(users);
   } catch (err) {

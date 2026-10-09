@@ -2,13 +2,13 @@ import { NextResponse, type NextRequest } from 'next/server';
 import ExcelJS from 'exceljs';
 import connectDB from '@/lib/db';
 import CytivaDayEntry from '@/models/CytivaDayEntry';
-import { AuthError, requireSuperAdmin } from '@/lib/auth';
+import { AuthError, requireQuizHost } from '@/lib/auth';
 import { CYTIVA_DAY_QUESTIONS } from '@/lib/cytivaDayQuiz';
 
 // Admin only: export Cytiva Day quiz submissions and the leaderboard as an Excel workbook
 export async function GET(req: NextRequest) {
   try {
-    requireSuperAdmin(req);
+    requireQuizHost(req);
     await connectDB();
 
     const entries = await CytivaDayEntry.find().sort({ startedAt: -1 });

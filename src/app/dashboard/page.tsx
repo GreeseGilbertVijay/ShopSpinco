@@ -1,5 +1,11 @@
 import Link from 'next/link';
+import { cookies } from 'next/headers';
 import Card from '@/components/ui/Card';
+import { COOKIE_NAME } from '@/lib/auth';
+import { verifySessionEdge } from '@/lib/auth-edge';
+
+// The quiz-only "admin" role sees just these cards (see ADMIN_ALLOWED_PATHS in proxy.ts).
+const QUIZ_HREFS = ['/dashboard/cytiva-day', '/dashboard/lab-essentials-quiz'];
 
 const actions = [
   {
@@ -33,6 +39,12 @@ const actions = [
     icon: <path d="M12 2 2 7l10 5 10-5-10-5Z M2 17l10 5 10-5 M2 12l10 5 10-5" />,
   },
   {
+    href: '/dashboard/lab-essentials-quiz',
+    title: 'Lab Essentials Quiz',
+    description: 'Technical Seminar quiz submissions and the leaderboard.',
+    icon: <path d="M9 3h6M10 3v6l-5 9a2 2 0 0 0 1.7 3h10.6a2 2 0 0 0 1.7-3l-5-9V3" />,
+  },
+  {
     href: '/dashboard/users',
     title: 'View All Users',
     description: 'Manage every account in the system.',
@@ -40,14 +52,21 @@ const actions = [
   },
 ];
 
-export default function Dashboard() {
+export default async function Dashboard() {
+  const token = (await cookies()).get(COOKIE_NAME)?.value;
+  const session = token ? await verifySessionEdge(token) : null;
+  const isQuizAdmin = session?.role === 'admin';
+  const visibleActions = isQuizAdmin ? actions.filter((a) => QUIZ_HREFS.includes(a.href)) : actions;
+
   return (
     <div className="max-w-6xl mx-auto w-full p-4 sm:p-8 text-left">
       <h1 className="text-2xl sm:text-3xl font-bold text-gray-900! mb-1">Dashboard</h1>
-      <p className="text-gray-500 mb-8">Manage products, quote submissions and users.</p>
+      <p className="text-gray-500 mb-8">
+        {isQuizAdmin ? 'Host the live quizzes and view their leaderboards.' : 'Manage products, quote submissions and users.'}
+      </p>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-        {actions.map((action) => (
+        {visibleActions.map((action) => (
           <Link key={action.href} href={action.href} className="no-underline text-inherit block">
             <Card className="p-5 h-full flex flex-col gap-3 transition-all hover:border-gray-300 hover:-translate-y-1 hover:shadow-elevated">
               <span className="inline-flex items-center justify-center w-10 h-10 rounded-lg bg-accent-subtle text-accent-hover">

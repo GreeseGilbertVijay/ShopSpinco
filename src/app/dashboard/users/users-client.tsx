@@ -13,7 +13,8 @@ import { SkeletonBlock } from '@/components/ui/Skeleton';
 const FILTER_TABS = [
   { key: 'all', label: 'All Users' },
   { key: 'customer', label: 'Customers' },
-  { key: 'superAdmin', label: 'Admins' },
+  { key: 'superAdmin', label: 'Super Admins' },
+  { key: 'admin', label: 'Admins' },
 ];
 
 export default function UsersClient() {

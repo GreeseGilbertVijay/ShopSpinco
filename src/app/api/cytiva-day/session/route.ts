@@ -3,13 +3,13 @@ import connectDB from '@/lib/db';
 import CytivaDayEntry from '@/models/CytivaDayEntry';
 import { getOrCreateCytivaDaySession } from '@/models/CytivaDaySession';
 import { CYTIVA_DAY_QUESTIONS } from '@/lib/cytivaDayQuiz';
-import { AuthError, requireSuperAdmin } from '@/lib/auth';
+import { AuthError, requireQuizHost } from '@/lib/auth';
 
 // Admin only: live view of the current question for host controls (answer counts, per-option
 // breakdown, elapsed time)
 export async function GET(req: NextRequest) {
   try {
-    requireSuperAdmin(req);
+    requireQuizHost(req);
     await connectDB();
 
     const session = await getOrCreateCytivaDaySession();

@@ -1,7 +1,7 @@
 import { NextResponse, type NextRequest } from 'next/server';
 import connectDB from '@/lib/db';
 import CytivaDaySessionModel from '@/models/CytivaDaySession';
-import { AuthError, requireSuperAdmin } from '@/lib/auth';
+import { AuthError, requireQuizHost } from '@/lib/auth';
 
 // Admin only: send the live quiz back to the waiting room (not started). Does not touch
 // any participant entries or scores — this only recovers a session stuck at "completed"
@@ -9,7 +9,7 @@ import { AuthError, requireSuperAdmin } from '@/lib/auth';
 // on the dashboard to move everyone from the waiting room to question 1 again.
 export async function POST(req: NextRequest) {
   try {
-    requireSuperAdmin(req);
+    requireQuizHost(req);
     await connectDB();
 
     await CytivaDaySessionModel.updateOne(

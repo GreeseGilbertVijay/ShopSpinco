@@ -4,7 +4,7 @@ import { usePathname } from 'next/navigation';
 import Navbar from './Navbar';
 import Footer from './Footer';
 
-const NO_CHROME_ROUTES = ['/process-technology', '/cytiva-day'];
+const NO_CHROME_ROUTES = ['/process-technology', '/cytiva-day', '/lab-essentials-quiz'];
 
 export default function SiteChrome({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();

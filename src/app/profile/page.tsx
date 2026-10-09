@@ -32,7 +32,7 @@ export default function MyProfile() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const roleLabel = user?.role === 'superAdmin' ? 'Admin' : 'Customer';
+  const roleLabel = user?.role === 'superAdmin' ? 'Super Admin' : user?.role === 'admin' ? 'Admin' : 'Customer';
   const initials = (user?.name || user?.email || '?').trim().charAt(0).toUpperCase();
 
   async function handleLogout() {

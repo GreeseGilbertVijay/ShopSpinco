@@ -81,7 +81,7 @@ export interface User {
   _id: string;
   name: string;
   email: string;
-  role: 'superAdmin' | 'customer';
+  role: 'superAdmin' | 'admin' | 'customer';
   isVerified: boolean;
   createdAt: string;
 }
@@ -401,6 +401,144 @@ export async function deleteCytivaDayEntry(id: string) {
 
 export async function exportCytivaDayEntries(): Promise<Blob> {
   const res = await fetch('/api/cytiva-day/export');
+  if (res.status === 401 || res.status === 403) {
+    throw new ApiError('Session expired', { status: res.status });
+  }
+  if (!res.ok) throw new ApiError('Failed to export quiz submissions', { status: res.status });
+  return res.blob();
+}
+
+export interface LabEssentialsQuestionView {
+  index: number;
+  total: number;
+  question: string;
+  options: string[];
+}
+
+export interface LabEssentialsAnswer {
+  question: number;
+  selectedOption: number | null;
+  correct: boolean;
+  marks: number;
+  timeTakenSeconds: number;
+}
+
+export interface LabEssentialsEntry {
+  _id: string;
+  name: string;
+  status: 'in-progress' | 'completed';
+  answers: LabEssentialsAnswer[];
+  totalScore: number;
+  totalTimeSeconds: number;
+  startedAt: string;
+  completedAt?: string;
+}
+
+export async function startLabEssentials(
+  name: string
+): Promise<{ id: string; currentQuestion: number } | { id: string; waiting: true } | { ended: true }> {
+  const res = await fetch('/api/lab-essentials/start', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ name }),
+  });
+  if (!res.ok) throw new ApiError(await parseErrorMessage(res, 'Failed to start the quiz'), { status: res.status });
+  return res.json();
+}
+
+export async function getLabEssentialsEntryState(id: string): Promise<{
+  name: string;
+  status: 'in-progress' | 'completed';
+  currentQuestion: number;
+  currentQuestionElapsedSeconds: number;
+  totalScore: number;
+  totalQuestions: number;
+  marksPerQuestion: number;
+  question: LabEssentialsQuestionView | null;
+  waiting: boolean;
+  answeredCount?: number;
+  totalParticipants?: number;
+}> {
+  const res = await fetch(`/api/lab-essentials/${id}`);
+  if (!res.ok) throw new ApiError(await parseErrorMessage(res, 'Failed to load quiz progress'), { status: res.status });
+  return res.json();
+}
+
+export async function submitLabEssentialsAnswer(
+  id: string,
+  payload: { questionIndex: number; selectedOption: number | null }
+): Promise<{ waiting?: boolean; completed?: boolean; currentQuestion?: number; question?: LabEssentialsQuestionView | null }> {
+  const res = await fetch(`/api/lab-essentials/${id}/answer`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok && res.status !== 409) {
+    throw new ApiError(data.message || 'Failed to submit answer', { status: res.status });
+  }
+  return data;
+}
+
+export interface LabEssentialsSessionState {
+  currentQuestion: number;
+  totalQuestions: number;
+  completed: boolean;
+  question: { index: number; total: number; question: string; options: string[]; correctIndex: number } | null;
+  currentQuestionElapsedSeconds: number;
+  answeredCount: number;
+  totalParticipants: number;
+  optionCounts: number[];
+}
+
+export async function getLabEssentialsSession(): Promise<LabEssentialsSessionState> {
+  const res = await fetch('/api/lab-essentials/session');
+  if (res.status === 401 || res.status === 403) {
+    throw new ApiError('Session expired', { status: res.status });
+  }
+  if (!res.ok) throw new ApiError('Failed to load quiz session', { status: res.status });
+  return res.json();
+}
+
+export async function advanceLabEssentialsSession(): Promise<{ currentQuestion: number; completed: boolean }> {
+  const res = await fetch('/api/lab-essentials/session/next', { method: 'POST' });
+  if (res.status === 401 || res.status === 403) {
+    throw new ApiError('Session expired', { status: res.status });
+  }
+  if (!res.ok) throw new ApiError(await parseErrorMessage(res, 'Failed to advance the question'), { status: res.status });
+  return res.json();
+}
+
+// Moves the live question back to question 1. Does not delete any participant entries or scores.
+export async function resetLabEssentialsSession(): Promise<{ currentQuestion: number }> {
+  const res = await fetch('/api/lab-essentials/session/reset', { method: 'POST' });
+  if (res.status === 401 || res.status === 403) {
+    throw new ApiError('Session expired', { status: res.status });
+  }
+  if (!res.ok) throw new ApiError(await parseErrorMessage(res, 'Failed to reset the quiz session'), { status: res.status });
+  return res.json();
+}
+
+export async function getLabEssentialsEntries(): Promise<{ entries: LabEssentialsEntry[]; totalQuestions: number }> {
+  const res = await fetch('/api/lab-essentials/entries');
+  if (res.status === 401 || res.status === 403) {
+    throw new ApiError('Session expired', { status: res.status });
+  }
+  if (!res.ok) throw new ApiError('Failed to load quiz submissions', { status: res.status });
+  return res.json();
+}
+
+export async function deleteLabEssentialsEntry(id: string) {
+  const res = await fetch(`/api/lab-essentials/${id}`, { method: 'DELETE' });
+  if (res.status === 401 || res.status === 403) {
+    throw new ApiError('Session expired', { status: res.status });
+  }
+  if (!res.ok) throw new ApiError(await parseErrorMessage(res, 'Failed to delete submission'), { status: res.status });
+  return res.json();
+}
+
+export async function exportLabEssentialsEntries(): Promise<Blob> {
+  const res = await fetch('/api/lab-essentials/export');
   if (res.status === 401 || res.status === 403) {
     throw new ApiError('Session expired', { status: res.status });
   }

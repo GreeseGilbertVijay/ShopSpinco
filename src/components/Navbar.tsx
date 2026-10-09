@@ -59,10 +59,12 @@ export default function Navbar() {
       </Link>
 
       <div className="hidden md:flex items-center gap-6">
-        <Link className={linkCls('/')} href="/">
-          Shop
-        </Link>
-        {user?.role === 'superAdmin' && (
+        {user?.role !== 'admin' && (
+          <Link className={linkCls('/')} href="/">
+            Shop
+          </Link>
+        )}
+        {(user?.role === 'superAdmin' || user?.role === 'admin') && (
           <Link className={linkCls('/dashboard')} href="/dashboard">
             Dashboard
           </Link>
@@ -106,10 +108,12 @@ export default function Navbar() {
 
       {menuOpen && (
         <div className="md:hidden absolute top-full left-0 right-0 mt-2 flex flex-col gap-1 px-4 py-3 bg-white border border-gray-100 rounded-2xl shadow-lifted z-50 text-left">
-          <Link className={`${linkCls('/')} py-2`} href="/" onClick={() => setMenuOpen(false)}>
-            Shop
-          </Link>
-          {user?.role === 'superAdmin' && (
+          {user?.role !== 'admin' && (
+            <Link className={`${linkCls('/')} py-2`} href="/" onClick={() => setMenuOpen(false)}>
+              Shop
+            </Link>
+          )}
+          {(user?.role === 'superAdmin' || user?.role === 'admin') && (
             <Link className={`${linkCls('/dashboard')} py-2`} href="/dashboard" onClick={() => setMenuOpen(false)}>
               Dashboard
             </Link>

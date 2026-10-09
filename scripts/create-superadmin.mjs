@@ -1,5 +1,6 @@
-// Creates (or updates) a superAdmin account in the "shopusers" collection.
+// Creates (or updates) a superAdmin account - or, with --admin, a quiz-only admin - in the "shopusers" collection.
 // Usage: npm run create-superadmin -- <email> <password> [name]
+//        npm run create-admin -- <email> <password> [name]
 import dns from 'dns';
 import bcrypt from 'bcryptjs';
 import mongoose from 'mongoose';
@@ -9,7 +10,9 @@ if (process.platform === 'win32') {
   dns.setServers(['8.8.8.8', '1.1.1.1']);
 }
 
-const [email, password, name = ''] = process.argv.slice(2);
+const args = process.argv.slice(2);
+const role = args.includes('--admin') ? 'admin' : 'superAdmin';
+const [email, password, name = ''] = args.filter((a) => a !== '--admin');
 if (!email || !password) {
   console.error('Usage: npm run create-superadmin -- <email> <password> [name]');
   process.exit(1);
@@ -28,12 +31,12 @@ const now = new Date();
 const result = await mongoose.connection.db.collection('shopusers').updateOne(
   { email: normalizedEmail },
   {
-    $set: { passwordHash, role: 'superAdmin', isVerified: true, updatedAt: now },
+    $set: { passwordHash, role, isVerified: true, updatedAt: now },
     $setOnInsert: { name: name.trim(), email: normalizedEmail, resetAttempts: 0, createdAt: now },
     $unset: { otpCode: '', otpExpiresAt: '', resetCode: '', resetExpiresAt: '' },
   },
   { upsert: true }
 );
 
-console.log(result.upsertedCount ? `Created superAdmin ${normalizedEmail}` : `Updated ${normalizedEmail} to superAdmin`);
+console.log(result.upsertedCount ? `Created ${role} ${normalizedEmail}` : `Updated ${normalizedEmail} to ${role}`);
 await mongoose.disconnect();

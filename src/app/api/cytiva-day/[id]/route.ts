@@ -3,7 +3,7 @@ import connectDB from '@/lib/db';
 import CytivaDayEntry from '@/models/CytivaDayEntry';
 import { getOrCreateCytivaDaySession } from '@/models/CytivaDaySession';
 import { CYTIVA_DAY_QUESTIONS, MARKS_PER_QUESTION, sanitizeQuestion } from '@/lib/cytivaDayQuiz';
-import { AuthError, requireSuperAdmin } from '@/lib/auth';
+import { AuthError, requireQuizHost } from '@/lib/auth';
 
 interface RouteContext {
   params: Promise<{ id: string }>;
@@ -104,7 +104,7 @@ export async function GET(_req: NextRequest, { params }: RouteContext) {
 // Admin only: delete a quiz attempt
 export async function DELETE(req: NextRequest, { params }: RouteContext) {
   try {
-    requireSuperAdmin(req);
+    requireQuizHost(req);
     const { id } = await params;
     await connectDB();
     const entry = await CytivaDayEntry.findByIdAndDelete(id);
